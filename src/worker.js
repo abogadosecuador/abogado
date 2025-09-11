@@ -164,6 +164,8 @@ class APIHandler {
           return this.handleContact(request);
         case 'whatsapp':
           return this.sendWhatsApp(request);
+        case 'data/searches':
+          return this.handleSearches(request);
         default:
           return this.notFound();
       }
@@ -419,7 +421,7 @@ export default {
     
     // Inicializar sistema de diagnóstico
     const diagnostic = new DiagnosticSystem(env);
-    
+
     // Manejar OPTIONS
     if (request.method === 'OPTIONS') {
       return new Response(null, {
@@ -429,6 +431,14 @@ export default {
     }
 
     try {
+      // Redirección a host canónico en workers.dev para evitar duplicados
+      const canonicalHost = 'abogadosecuador.abogadosecuador.workers.dev';
+      if (url.hostname !== canonicalHost && url.hostname.endsWith('.workers.dev')) {
+        const redirected = new URL(url.toString());
+        redirected.hostname = canonicalHost;
+        return Response.redirect(redirected.toString(), 301);
+      }
+
       let response;
 
       // Rutas API

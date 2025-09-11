@@ -24,9 +24,12 @@
 @layer base {
   html {
     font-family: 'Inter var', system-ui, -apple-system, sans-serif;
+    height: 100%;
   }
   body {
     @apply bg-secondary-50 text-secondary-900;
+    min-height: 100%;
+    overflow-x: hidden; /* Evita espacios en blanco a la derecha por desbordes */
   }
 }
 
@@ -48,5 +51,34 @@
   }
   .container-custom {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Asegurar que contenedores ocupen ancho completo y no generen scroll horizontal */
+  .w-full-screen {
+    width: 100vw;
+  }
+  .no-x-overflow {
+    overflow-x: hidden;
+  }
+
+  /* Evitar solapamiento entre chatbot flotante y carrito */
+  :root {
+    --z-chatbot: 60;
+    --z-cart: 70; /* carrito por encima del chatbot */
+  }
+  .chatbot-fab,
+  .chatbot-button,
+  .chatbot-widget,
+  .whatsapp-float {
+    z-index: var(--z-chatbot) !important;
+  }
+  .cart-fab,
+  .floating-cart,
+  .cart-widget {
+    z-index: var(--z-cart) !important;
+  }
+  /* Separación segura en borde derecho para widgets flotantes */
+  .safe-right-offset {
+    right: clamp(12px, 2vw, 20px);
   }
 }

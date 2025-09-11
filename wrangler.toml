@@ -38,32 +38,6 @@ CLOUDINARY_CLOUD_NAME = "dg3s7tqoj"
 APP_URL = "https://abogadosecuador.workers.dev"
 
 # Production environment
-[env.production]
-name = "abogadosecuador"
-routes = [
-  { pattern = "abogadosecuador.workers.dev/*", zone_name = "" }
-]
-
-# Production KV
-[[env.production.kv_namespaces]]
-binding = "ABOGADO_WILSON_KV"
-id = "9585583f15824e6891e9660bd6f85d7d"
-
-# Production D1
-[[env.production.d1_databases]]
-binding = "ABOGADO_WILSON_DB"
-database_name = "abogadosecuador"
-database_id = "029949b9-4266-4060-8bcd-71525b26600c"
-
-# Production variables
-[env.production.vars]
-ENVIRONMENT = "production"
-CORS_ORIGIN = "*"
-API_ENABLED = "true"
-SUPABASE_URL = "https://kbybhgxqdefuquybstqk.supabase.co"
-CLIENT_VERSION = "3.0.0"
-N8N_WEBHOOK_URL = "https://n8n-latest-hurl.onrender.com"
-WHATSAPP_NUMBER = "+59398835269"
-CONTACT_EMAIL = "Wifirmalegal@gmail.com"
-CLOUDINARY_CLOUD_NAME = "dg3s7tqoj"
-APP_URL = "https://abogadosecuador.workers.dev"
+#[env.production]
+#name = "abogadosecuador"
+# Note: routes are for custom domains, not workers.dev. Leaving env-specific bindings commented out.
