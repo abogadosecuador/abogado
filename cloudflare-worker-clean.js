@@ -1,8 +1,5 @@
-// Importar Prisma Client
-import { PrismaClient } from '@prisma/client';
-
-// Declarar una variable global para el cliente de Prisma
-let prisma;
+// Nota: El entorno de Cloudflare Workers no soporta Prisma Client (dependencia de Node.js)
+// Se reemplaza por endpoints ligeros compatibles con Workers y uso de KV/D1 vía bindings.
 
 /**
  * Cloudflare Worker limpio y compatible para Abogado Wilson
@@ -44,46 +41,59 @@ const standardHeaders = {
 async function handleApiRequest(request, env) {
     const url = new URL(request.url);
     const path = url.pathname;
-
-    // Inicializar Prisma Client si aún no está inicializado
-    if (!prisma) {
-        prisma = new PrismaClient({
-            datasources: {
-                db: {
-                    // For local development, we point to the local SQLite file
-                    url: "file:./prisma/dev.db",
-                },
-            },
-        });
-    }
-
     try {
-        if (path === '/api/appointments' && request.method === 'GET') {
-            const appointments = await prisma.appointment.findMany({
-                orderBy: {
-                    startTime: 'asc',
-                },
-                take: 10, // Limit to 10 upcoming appointments
-            });
-            return new Response(JSON.stringify(appointments), {
-                headers: { 'Content-Type': 'application/json', ...standardHeaders }
-            });
+      // Endpoint de salud
+      if (path === '/api/health' && request.method === 'GET') {
+        return new Response(JSON.stringify({ ok: true, status: 'healthy', time: new Date().toISOString() }), {
+          headers: { 'Content-Type': 'application/json', ...standardHeaders }
+        });
+      }
+
+      // Endpoint de diagnóstico (no expone secretos)
+      if (path === '/api/diag' && request.method === 'GET') {
+        const hasKV = typeof env.ABOGADO_WILSON_KV !== 'undefined';
+        const diag = {
+          environment: ENV?.ENVIRONMENT || 'production',
+          hasKV,
+          hasSupabaseUrl: Boolean(ENV?.SUPABASE_URL),
+          routes: ['GET /api/health', 'GET /api/diag', 'POST /api/progress'],
+          time: new Date().toISOString(),
+        };
+        return new Response(JSON.stringify(diag), {
+          headers: { 'Content-Type': 'application/json', ...standardHeaders }
+        });
+      }
+
+      // Endpoint para registrar progreso de despliegue/carga (diagnóstico)
+      if (path === '/api/progress' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const step = body?.step || 'unknown';
+        const note = body?.note || '';
+        const key = `deploy:progress:${Date.now()}`;
+        try {
+          if (env.ABOGADO_WILSON_KV) {
+            await env.ABOGADO_WILSON_KV.put(key, JSON.stringify({ step, note, at: new Date().toISOString() }), { expirationTtl: 86400 });
+          }
+        } catch (e) {
+          // Continuar aunque KV falle
+          console.error('KV put error', e);
         }
-
-        // --- Add other API routes here ---
-
-        // Fallback for unknown API routes
-        return new Response(JSON.stringify({ error: 'Not Found' }), {
-            status: 404,
-            headers: { 'Content-Type': 'application/json', ...standardHeaders }
+        return new Response(JSON.stringify({ stored: true, key }), {
+          headers: { 'Content-Type': 'application/json', ...standardHeaders }
         });
+      }
 
+      // Fallback para rutas API no existentes
+      return new Response(JSON.stringify({ error: 'Not Found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json', ...standardHeaders }
+      });
     } catch (error) {
-        console.error('API Error:', error);
-        return new Response(JSON.stringify({ error: 'Internal Server Error', details: error.message }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json', ...standardHeaders }
-        });
+      console.error('API Error:', error);
+      return new Response(JSON.stringify({ error: 'Internal Server Error', details: error?.message || String(error) }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...standardHeaders }
+      });
     }
 }
 
@@ -195,9 +205,14 @@ export default {
       if (url.pathname.startsWith('/api/')) {
         response = await handleApiRequest(request, env);
       } 
-      // Handle static assets using Cloudflare Pages default behavior
+      // Handle static assets using Cloudflare Assets binding
       else {
-        response = await env.ASSETS.fetch(request);
+        if (env.ASSETS && typeof env.ASSETS.fetch === 'function') {
+          response = await env.ASSETS.fetch(request);
+        } else {
+          // Fallback simple
+          response = new Response('Static assets not configured', { status: 500, headers: { 'Content-Type': 'text/plain' } });
+        }
       }
     } catch (error) {
       console.error('Critical Worker Error:', error);

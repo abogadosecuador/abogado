@@ -31,3 +31,4 @@ node_modules/
 .env
 .tmp_*.json
 scripts/analyze-imports.cjs
+.tmp_*.json
