@@ -598,7 +598,7 @@ También ofrecemos:
       {!embedded && (
         <motion.button
           onClick={() => setIsOpen(!isOpen)}
-          className="fixed bottom-6 right-6 z-40 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all"
+          className="fixed bottom-6 left-6 z-40 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
         >
@@ -613,7 +613,7 @@ También ofrecemos:
             initial={{ opacity: 0, y: 100, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.8 }}
-            className="fixed bottom-24 right-6 w-[400px] h-[600px] z-40"
+            className="fixed bottom-24 left-6 w-[400px] h-[600px] z-40"
           >
             <ChatContent />
           </motion.div>

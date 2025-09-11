@@ -54,7 +54,7 @@ const FloatingCart = () => {
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
-        className="fixed bottom-6 right-6 z-50"
+        className="fixed bottom-6 right-6 safe-right-offset z-50"
       >
         <motion.button
           whileHover={{ scale: 1.1 }}

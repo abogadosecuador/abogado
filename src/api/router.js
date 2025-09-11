@@ -9,6 +9,7 @@ import { CartHandler } from './handlers/cart.js';
 import { DocumentHandler } from './handlers/documents.js';
 import { ServiceHandler } from './handlers/services.js';
 import { HealthHandler } from './handlers/health.js';
+import { FormsHandler } from './handlers/forms.js';
 import { corsHeaders } from './headers.js';
 import { createSupabaseClient } from '../lib/supabase.js';
 import { RateLimiter } from '../lib/rate-limiter.js';
@@ -28,6 +29,7 @@ export class APIRouter {
     this.documentHandler = new DocumentHandler(env, this.supabase);
     this.serviceHandler = new ServiceHandler(env, this.supabase);
     this.healthHandler = new HealthHandler(env, this.supabase);
+    this.formsHandler = new FormsHandler(env, this.supabase);
   }
 
   async route(request, pathname) {
@@ -69,8 +71,33 @@ export class APIRouter {
         case 'cart':
           return await this.cartHandler.handle(request, method, action || id);
         
-        case 'payments':
-          return await this.paymentHandler.handle(request, method, id, action);
+        case 'payments': {
+          // Compatibilidad de rutas:
+          // POST /api/payments/create-order
+          // POST /api/payments/capture
+          // POST /api/payments/refund/:id
+          // POST /api/payments/webhook
+          // GET  /api/payments/:id?
+          let effectiveId = id;
+          let effectiveAction = action;
+
+          if (method === 'POST') {
+            // Si es POST y solo hay un segmento (p.ej. create-order|capture|webhook)
+            if (id && !action) {
+              if (['create-order', 'capture', 'webhook'].includes(id)) {
+                effectiveAction = id;
+                effectiveId = undefined;
+              }
+            }
+            // Refund con id en segundo segmento
+            if (id === 'refund' && action) {
+              effectiveAction = 'refund';
+              effectiveId = action; // aquí action es el id de pago
+            }
+          }
+
+          return await this.paymentHandler.handle(request, method, effectiveId, effectiveAction);
+        }
         
         case 'availability':
           return await this.appointmentHandler.checkAvailability(request);
@@ -86,6 +113,9 @@ export class APIRouter {
         
         case 'config':
           return this.getConfig();
+        
+        case 'forms':
+          return await this.formsHandler.handle(request, method, id, action);
         
         default:
           return this.notFound();

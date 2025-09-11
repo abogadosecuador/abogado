@@ -146,7 +146,8 @@ export class PaymentHandler {
       appointment_id, 
       cart_id,
       return_url,
-      cancel_url 
+      cancel_url,
+      metadata = {},
     } = await request.json();
 
     if (!amount || amount <= 0) {
@@ -164,7 +165,7 @@ export class PaymentHandler {
         currency,
         status: 'pending',
         payment_method: 'paypal',
-        metadata: { description }
+        metadata: { description, ...metadata }
       })
       .select()
       .single();
@@ -490,9 +491,34 @@ export class PaymentHandler {
   }
 
   async verifyPayPalWebhook(headers, body) {
-    // Implement PayPal webhook verification
-    // For production, use PayPal's webhook verification API
-    return true;
+    try {
+      const accessToken = await this.getPayPalAuth();
+      const verificationPayload = {
+        auth_algo: headers['paypal-auth-algo'] || headers['PayPal-Auth-Algo'],
+        cert_url: headers['paypal-cert-url'] || headers['PayPal-Cert-Url'],
+        transmission_id: headers['paypal-transmission-id'] || headers['PayPal-Transmission-Id'],
+        transmission_sig: headers['paypal-transmission-sig'] || headers['PayPal-Transmission-Sig'],
+        transmission_time: headers['paypal-transmission-time'] || headers['PayPal-Transmission-Time'],
+        webhook_id: this.env.PAYPAL_WEBHOOK_ID,
+        webhook_event: JSON.parse(body)
+      };
+
+      const resp = await fetch(`${this.paypalApiUrl}/v1/notifications/verify-webhook-signature`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(verificationPayload)
+      });
+
+      if (!resp.ok) return false;
+      const result = await resp.json();
+      return result.verification_status === 'SUCCESS';
+    } catch (e) {
+      console.error('Webhook verify error:', e);
+      return false;
+    }
   }
 
   async processPaymentCompleted(event) {

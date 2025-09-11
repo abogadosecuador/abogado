@@ -3,10 +3,11 @@
  * Abogados Ecuador
  */
 
-// PayPal Configuration
-const PAYPAL_CLIENT_ID = 'AWxKgr5n7ex5Lc3fDBOooaVHLgcAB-KCrYXgCmit9DpNXFIuBa6bUypYFjr-hAqARlILGxk_rRTsBZeS';
-const PAYPAL_SECRET = 'EO-ghpkDi_L5oQx9dkZPg3gABTs_UuWmsBtaexDyfYfXMhjbcJ3KK0LAuntr4zjoNSViGHZ_rkD7-YCt';
-const PAYPAL_API_URL = 'https://api-m.paypal.com'; // Use https://api-m.sandbox.paypal.com for testing
+// PayPal Configuration (Deprecated in frontend)
+// WARNING: No almacenar credenciales en el frontend. Usar el backend (/api/payments).
+const PAYPAL_CLIENT_ID = '';
+const PAYPAL_SECRET = '';
+const PAYPAL_API_URL = 'https://api-m.paypal.com';
 
 class PayPalService {
   constructor() {
@@ -18,41 +19,15 @@ class PayPalService {
    * Get PayPal access token
    */
   async getAccessToken() {
-    if (this.accessToken && this.tokenExpiry && new Date() < this.tokenExpiry) {
-      return this.accessToken;
-    }
-
-    try {
-      const auth = btoa(`${PAYPAL_CLIENT_ID}:${PAYPAL_SECRET}`);
-      const response = await fetch(`${PAYPAL_API_URL}/v1/oauth2/token`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Basic ${auth}`,
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: 'grant_type=client_credentials'
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to get PayPal access token');
-      }
-
-      const data = await response.json();
-      this.accessToken = data.access_token;
-      this.tokenExpiry = new Date(Date.now() + (data.expires_in * 1000) - 60000); // Expire 1 minute early
-      
-      return this.accessToken;
-    } catch (error) {
-      console.error('PayPal auth error:', error);
-      throw error;
-    }
+    console.warn('[Deprecated] No use PayPal desde el frontend. Use /api/payments en el servidor.');
+    throw new Error('Uso de PayPal desde el frontend está deshabilitado por seguridad.');
   }
 
   /**
    * Create PayPal order
    */
   async createOrder(orderData) {
-    const accessToken = await this.getAccessToken();
+    await this.getAccessToken();
 
     const order = {
       intent: 'CAPTURE',
@@ -120,22 +95,7 @@ class PayPalService {
     }
 
     try {
-      const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-          'PayPal-Request-Id': `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-        },
-        body: JSON.stringify(order)
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to create PayPal order');
-      }
-
-      return await response.json();
+      throw new Error('Use el endpoint /api/payments/create-order para crear la orden.');
     } catch (error) {
       console.error('PayPal order creation error:', error);
       throw error;
@@ -146,23 +106,10 @@ class PayPalService {
    * Capture PayPal order
    */
   async captureOrder(orderId) {
-    const accessToken = await this.getAccessToken();
+    await this.getAccessToken();
 
     try {
-      const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders/${orderId}/capture`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to capture PayPal order');
-      }
-
-      return await response.json();
+      throw new Error('Use el endpoint /api/payments/capture para capturar el pago.');
     } catch (error) {
       console.error('PayPal capture error:', error);
       throw error;
@@ -173,21 +120,10 @@ class PayPalService {
    * Get order details
    */
   async getOrderDetails(orderId) {
-    const accessToken = await this.getAccessToken();
+    await this.getAccessToken();
 
     try {
-      const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders/${orderId}`, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to get PayPal order details');
-      }
-
-      return await response.json();
+      throw new Error('Consulte detalles del pago desde el backend por seguridad.');
     } catch (error) {
       console.error('PayPal order details error:', error);
       throw error;
@@ -198,7 +134,7 @@ class PayPalService {
    * Refund payment
    */
   async refundPayment(captureId, amount = null, reason = 'Customer request') {
-    const accessToken = await this.getAccessToken();
+    await this.getAccessToken();
 
     const refundData = {
       note_to_payer: reason
@@ -212,21 +148,7 @@ class PayPalService {
     }
 
     try {
-      const response = await fetch(`${PAYPAL_API_URL}/v2/payments/captures/${captureId}/refund`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(refundData)
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to refund payment');
-      }
-
-      return await response.json();
+      throw new Error('Los reembolsos deben procesarse desde el backend.');
     } catch (error) {
       console.error('PayPal refund error:', error);
       throw error;
@@ -332,7 +254,7 @@ class PayPalService {
    * Verify webhook signature
    */
   async verifyWebhookSignature(headers, body, webhookId) {
-    const accessToken = await this.getAccessToken();
+    await this.getAccessToken();
 
     const verificationData = {
       auth_algo: headers['paypal-auth-algo'],
@@ -345,21 +267,7 @@ class PayPalService {
     };
 
     try {
-      const response = await fetch(`${PAYPAL_API_URL}/v1/notifications/verify-webhook-signature`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(verificationData)
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to verify webhook signature');
-      }
-
-      const result = await response.json();
-      return result.verification_status === 'SUCCESS';
+      throw new Error('La verificación de webhooks se realiza en el backend.');
     } catch (error) {
       console.error('PayPal webhook verification error:', error);
       return false;

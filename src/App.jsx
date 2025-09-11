@@ -124,9 +124,9 @@ function App() {
       <CartProvider>
         <ModuleProvider>
     <ThemeProvider>
-            <div className="App min-h-screen bg-background-primary text-text-primary">
+            <div className="App min-h-screen bg-background-primary text-text-primary w-full overflow-x-hidden">
         <Navbar />
-        <main className="flex-1">
+        <main className="flex-1 w-full no-x-overflow">
           <Routes>
                   {/* Rutas públicas (visitantes) */}
             <Route path="/" element={<HomePage />} />

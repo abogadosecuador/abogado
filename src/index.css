@@ -25,11 +25,14 @@
   html {
     font-family: 'Inter var', system-ui, -apple-system, sans-serif;
     height: 100%;
+    width: 100%;
+    overflow-x: hidden;
   }
   body {
     @apply bg-secondary-50 text-secondary-900;
     min-height: 100%;
     overflow-x: hidden; /* Evita espacios en blanco a la derecha por desbordes */
+    width: 100%;
   }
 }
 
@@ -59,6 +62,23 @@
   }
   .no-x-overflow {
     overflow-x: hidden;
+  }
+
+  /* Medios responsivos para evitar desbordes */
+  img, video, canvas, svg {
+    max-width: 100%;
+    height: auto;
+  }
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  /* Contenedores máximos por breakpoint para Chrome/Brave */
+  .container,
+  .container-custom {
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   /* Evitar solapamiento entre chatbot flotante y carrito */

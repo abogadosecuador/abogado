@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import confetti from 'canvas-confetti';
+import PayPalButton from '../Payment/PayPalButton.jsx';
 
 const CheckoutSystem = () => {
   const navigate = useNavigate();
@@ -132,7 +133,14 @@ const CheckoutSystem = () => {
   const processPayment = async () => {
     setIsProcessing(true);
     
-    // Simular procesamiento
+    // Si el método es PayPal, no procesamos aquí. El botón PayPal gestiona la orden/captura.
+    if (paymentMethod === 'paypal') {
+      setIsProcessing(false);
+      toast('Use el botón de PayPal para completar el pago de forma segura.', { icon: '🛡️' });
+      return;
+    }
+
+    // Simular procesamiento (tarjeta, banco, otros). Reemplace con integración real.
     await new Promise(resolve => setTimeout(resolve, 3000));
     
     // Éxito
@@ -162,7 +170,8 @@ const CheckoutSystem = () => {
       if (!validateBillingInfo()) return;
       setCurrentStep(3);
     } else if (currentStep === 3) {
-      if (!validateCardInfo()) return;
+      // Para PayPal no validamos tarjeta; para tarjeta sí
+      if (paymentMethod === 'card' && !validateCardInfo()) return;
       await processPayment();
     }
   };
@@ -441,9 +450,24 @@ const CheckoutSystem = () => {
 
       {/* Otros métodos de pago */}
       {paymentMethod === 'paypal' && (
-        <div className="bg-blue-50 p-6 rounded-lg text-center">
-          <FaPaypal className="text-6xl text-blue-600 mx-auto mb-4" />
-          <p>Serás redirigido a PayPal para completar el pago</p>
+        <div className="bg-blue-50 p-6 rounded-lg">
+          <div className="text-center mb-4">
+            <FaPaypal className="text-6xl text-blue-600 mx-auto mb-2" />
+            <p className="text-sm text-blue-900">Paga de forma segura con PayPal. La orden y captura se validan en el servidor.</p>
+          </div>
+          <PayPalButton 
+            amount={Number(calculateTotal().toFixed(2))}
+            metadata={{
+              billing: billingInfo,
+              cart: cartItems?.map(i => ({ id: i.id, name: i.name, quantity: i.quantity, price: i.price, type: i.type })),
+              totals: {
+                subtotal: Number(calculateSubtotal().toFixed(2)),
+                tax: Number(calculateTax().toFixed(2)),
+                total: Number(calculateTotal().toFixed(2)),
+                discountPercent: discount
+              }
+            }}
+          />
         </div>
       )}
 
@@ -578,7 +602,7 @@ const CheckoutSystem = () => {
               
               <button
                 onClick={handleNextStep}
-                disabled={isProcessing}
+                disabled={isProcessing || (currentStep === 3 && paymentMethod === 'paypal')}
                 className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg flex items-center"
               >
                 {isProcessing ? (
@@ -589,7 +613,7 @@ const CheckoutSystem = () => {
                 ) : currentStep === 3 ? (
                   <>
                     <FaLock className="mr-2" />
-                    Pagar ${calculateTotal().toFixed(2)}
+                    {paymentMethod === 'paypal' ? 'Complete con PayPal ↓' : `Pagar $${calculateTotal().toFixed(2)}`}
                   </>
                 ) : (
                   <>
