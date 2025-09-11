@@ -29,3 +29,5 @@ build/
 coverage/
 node_modules/
 .env
+.tmp_*.json
+scripts/analyze-imports.cjs
