@@ -47,22 +47,21 @@ const NewsletterSignup = () => {
       // Preparar los datos a enviar
       const selectedInterests = Object.keys(interests).filter(key => interests[key]);
       
-      const response = await fetch('/api/newsletter/subscribe', {
+      const response = await fetch('/api/forms/newsletter', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email,
-          name,
-          interests: selectedInterests
+          data: { email, name, interests: selectedInterests },
+          metadata: { source: 'newsletter_signup' }
         })
       });
       
       const data = await response.json();
       
-      if (!response.ok) {
-        throw new Error(data.message || 'Error al suscribirse al newsletter');
+      if (!response.ok || !data?.success) {
+        throw new Error(data?.error || data?.message || 'Error al suscribirse al newsletter');
       }
       
       // Éxito
@@ -84,9 +83,6 @@ const NewsletterSignup = () => {
     } catch (error) {
       console.error('Error subscribing to newsletter:', error);
       toast.error(error.message || 'Ha ocurrido un error al procesar tu suscripción');
-      
-      // En caso de desarrollo, simulamos éxito
-      setSuccess(true);
     } finally {
       setLoading(false);
     }

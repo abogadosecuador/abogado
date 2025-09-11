@@ -1,7 +1,6 @@
 import React from 'react';
 import PublicHeader from './PublicHeader';
 import PublicFooter from './PublicFooter';
-import ChatbotButton from '../ChatbotButton';
 import WhatsAppButton from '../WhatsAppButton';
 import CookiesBanner from '../CookiesBanner';
 
@@ -23,7 +22,6 @@ const PublicLayout: React.FC<PublicLayoutProps> = ({ children, onNavigate, isLog
             
             {/* Floating Action Buttons */}
             <WhatsAppButton />
-            <ChatbotButton />
             <CookiesBanner />
         </div>
     );

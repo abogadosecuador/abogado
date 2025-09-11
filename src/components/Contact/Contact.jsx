@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -10,6 +11,7 @@ const Contact = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const location = useLocation();
 
   const handleChange = (e) => {
     setFormData({
@@ -21,19 +23,33 @@ const Contact = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Simular envío
-    setTimeout(() => {
-      alert('Mensaje enviado correctamente. Te contactaremos pronto.');
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: ''
+
+    try {
+      const res = await fetch('/api/forms/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          data: formData,
+          metadata: {
+            page: location?.pathname || '/contacto',
+            source: 'contact_form',
+          }
+        })
       });
+
+      const json = await res.json();
+      if (!res.ok || !json?.success) {
+        throw new Error(json?.error || 'No se pudo enviar el formulario');
+      }
+
+      alert('Mensaje enviado correctamente. Te contactaremos pronto.');
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+    } catch (err) {
+      console.error('Contact form error:', err);
+      alert('Ocurrió un error al enviar el formulario. Intenta nuevamente.');
+    } finally {
       setIsSubmitting(false);
-    }, 2000);
+    }
   };
 
   return (

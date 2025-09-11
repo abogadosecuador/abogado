@@ -126,7 +126,7 @@ function Navbar() {
     <Disclosure as="nav" className="bg-white shadow-lg sticky top-0 z-50">
       {({ open }) => (
         <>
-          <div className="mx-auto px-4 sm:px-6 lg:px-8 w-full max-w-7xl">
+          <div className="mx-auto px-4 sm:px-6 lg:px-8 w-full max-w-screen-xl overflow-x-hidden">
             <div className="relative flex h-16 items-center justify-between">
               {/* Mobile menu button */}
               <div className="absolute inset-y-0 left-0 flex items-center sm:hidden z-50">
@@ -144,9 +144,9 @@ function Navbar() {
               </div>
 
               {/* Desktop navigation */}
-              <div className="flex flex-1 items-center justify-center sm:justify-start">
+              <div className="flex flex-1 items-center justify-center sm:justify-start overflow-x-hidden">
                 {/* Logo completely removed as requested */}
-                <div className="hidden sm:ml-6 sm:flex sm:space-x-2 md:space-x-4">
+                <div className="hidden sm:ml-6 sm:flex flex-wrap gap-x-2 gap-y-2 md:gap-x-4 max-w-full">
                   {allNavigation.map((item) => 
                     item.hasSubmenu ? (
                       <Popover className="relative" key={item.name}>
