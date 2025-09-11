@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { useTheme } from './context/ThemeContext';
@@ -19,12 +19,15 @@ import ContactPage from './pages/ContactPage';
 import ServicesPage from './pages/ServicesPage';
 import PlansPage from './pages/PlansPage';
 import AboutPage from './pages/AboutPage';
-const ServicesLegalPage = lazy(() => import('./pages/ServicesLegalPage'));
-const ForumPage = lazy(() => import('./pages/ForumPage'));
 import BlogPage from './pages/BlogPage';
 import BlogPostPage from './pages/BlogPostPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsOfServicePage from './pages/TermsOfServicePage';
+import ProductsPage from './pages/ProductsPage';
+
+// Lazy loaded pages
+const ServicesLegalPage = lazy(() => import('./pages/ServicesLegalPage'));
+const ForumPage = lazy(() => import('./pages/ForumPage'));
 
 // Consultation Pages
 const PenalConsultationPage = lazy(() => import('./pages/ConsultationTypes/PenalConsultationPage'));

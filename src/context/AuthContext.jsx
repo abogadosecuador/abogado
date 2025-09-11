@@ -139,7 +139,6 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       toast.success('Sesión cerrada correctamente');
     }
-    toast.success('Sesión cerrada correctamente');
   };
 
   // Función para actualizar usuario
