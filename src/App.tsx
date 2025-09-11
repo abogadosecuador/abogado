@@ -118,58 +118,58 @@ function App() {
         {/* Rutas del dashboard */}
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={
-            isAuthenticated ? (
+            isAuthenticated() ? (
               userType === 'admin' ? <AdminDashboard /> : <ClientDashboard />
             ) : <Navigate to="/login" replace />
           } />
           
           {/* Rutas para clientes */}
           <Route path="client" element={
-            isAuthenticated && userType === 'client' ? <ClientDashboard /> : <Navigate to="/login" replace />
+            isAuthenticated() && userType === 'client' ? <ClientDashboard /> : <Navigate to="/login" replace />
           } />
           <Route path="my-courses" element={
-            isAuthenticated ? <MyCoursesPage /> : <Navigate to="/login" replace />
+            isAuthenticated() ? <MyCoursesPage /> : <Navigate to="/login" replace />
           } />
           <Route path="my-purchases" element={
-            isAuthenticated ? <MyPurchasesPage /> : <Navigate to="/login" replace />
+            isAuthenticated() ? <MyPurchasesPage /> : <Navigate to="/login" replace />
           } />
           <Route path="profile" element={
-            isAuthenticated ? <ProfilePage /> : <Navigate to="/login" replace />
+            isAuthenticated() ? <ProfilePage /> : <Navigate to="/login" replace />
           } />
           <Route path="calendar" element={
-            isAuthenticated ? <CalendarPage /> : <Navigate to="/login" replace />
+            isAuthenticated() ? <CalendarPage /> : <Navigate to="/login" replace />
           } />
           <Route path="consultations" element={
-            isAuthenticated ? <ConsultationsPage /> : <Navigate to="/login" replace />
+            isAuthenticated() ? <ConsultationsPage /> : <Navigate to="/login" replace />
           } />
 
           {/* Rutas para administradores */}
           <Route path="admin" element={
-            isAuthenticated && userType === 'admin' ? <AdminDashboard /> : <Navigate to="/login" replace />
+            isAuthenticated() && userType === 'admin' ? <AdminDashboard /> : <Navigate to="/login" replace />
           } />
           <Route path="clients" element={
-            isAuthenticated && userType === 'admin' ? <ClientsPage /> : <Navigate to="/login" replace />
+            isAuthenticated() && userType === 'admin' ? <ClientsPage /> : <Navigate to="/login" replace />
           } />
           <Route path="cases" element={
-            isAuthenticated && userType === 'admin' ? <CasesPage /> : <Navigate to="/login" replace />
+            isAuthenticated() && userType === 'admin' ? <CasesPage /> : <Navigate to="/login" replace />
           } />
           <Route path="analytics" element={
-            isAuthenticated && userType === 'admin' ? <AnalyticsPage /> : <Navigate to="/login" replace />
+            isAuthenticated() && userType === 'admin' ? <AnalyticsPage /> : <Navigate to="/login" replace />
           } />
           <Route path="sales" element={
-            isAuthenticated && userType === 'admin' ? <SalesPage /> : <Navigate to="/login" replace />
+            isAuthenticated() && userType === 'admin' ? <SalesPage /> : <Navigate to="/login" replace />
           } />
           <Route path="users" element={
-            isAuthenticated && userType === 'admin' ? <UsersPage /> : <Navigate to="/login" replace />
+            isAuthenticated() && userType === 'admin' ? <UsersPage /> : <Navigate to="/login" replace />
           } />
           <Route path="settings" element={
-            isAuthenticated ? <SettingsPage /> : <Navigate to="/login" replace />
+            isAuthenticated() ? <SettingsPage /> : <Navigate to="/login" replace />
           } />
         </Route>
 
         {/* Rutas del checkout */}
         <Route path="/checkout" element={
-          isAuthenticated ? <CheckoutPage /> : <Navigate to="/login" replace />
+          isAuthenticated() ? <CheckoutPage /> : <Navigate to="/login" replace />
         } />
 
         {/* Rutas del editor */}

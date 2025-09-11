@@ -272,9 +272,9 @@ const UnifiedStore = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 w-full overflow-x-hidden">
       {/* Header Hero */}
-      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white">
+      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white overflow-hidden">
         <div className="container mx-auto px-4 py-12">
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
@@ -318,7 +318,7 @@ const UnifiedStore = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 overflow-x-hidden">
         {/* Categories */}
         <div className="mb-8">
           <div className="flex flex-wrap gap-3">
