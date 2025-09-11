@@ -40,7 +40,7 @@ routes = [
 ENVIRONMENT = "production"
 CORS_ORIGIN = "*"
 API_ENABLED = "true"
-SUPABASE_URL = "https://phzldiaohelbyobhjrnc.supabase.co"
+SUPABASE_URL = "https://kbybhgxqdefuquybstqk.supabase.co"
 # SUPABASE_KEY debe configurarse a través de variables secretas
 CLIENT_VERSION = "3.0.0"
 DISABLE_MULTIPLE_CLIENTS = "true"
