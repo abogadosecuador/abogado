@@ -1,0 +1,391 @@
+{
+  "name": "Abogados Ecuador Workflows",
+  "nodes": [
+    {
+      "id": "webhook_user_registered",
+      "type": "n8n-nodes-base.webhook",
+      "name": "User Registration Webhook",
+      "position": [250, 300],
+      "webhookId": "user-registered",
+      "parameters": {
+        "path": "user-registered",
+        "responseMode": "onReceived",
+        "responseData": "allEntries",
+        "responsePropertyName": "data",
+        "responseCode": 200,
+        "responseHeaders": {},
+        "options": {}
+      }
+    },
+    {
+      "id": "email_welcome",
+      "type": "n8n-nodes-base.emailSend",
+      "name": "Send Welcome Email",
+      "position": [450, 300],
+      "parameters": {
+        "fromEmail": "noreply@abogadosecuador.com",
+        "toEmail": "={{$json[\"email\"]}}",
+        "subject": "Bienvenido a Abogados Ecuador",
+        "text": "Hola {{$json[\"full_name\"]}},\n\nGracias por registrarte en Abogados Ecuador. Tu cuenta ha sido creada exitosamente.\n\nPor favor verifica tu email haciendo clic en el enlace que te hemos enviado.\n\nSaludos,\nEquipo Abogados Ecuador",
+        "html": "<h2>Hola {{$json[\"full_name\"]}},</h2><p>Gracias por registrarte en <strong>Abogados Ecuador</strong>.</p><p>Tu cuenta ha sido creada exitosamente.</p><p>Por favor verifica tu email haciendo clic en el enlace que te hemos enviado.</p><br><p>Saludos,<br>Equipo Abogados Ecuador</p>"
+      }
+    },
+    {
+      "id": "webhook_appointment_created",
+      "type": "n8n-nodes-base.webhook",
+      "name": "Appointment Created Webhook",
+      "position": [250, 500],
+      "webhookId": "appointment-created",
+      "parameters": {
+        "path": "appointment-created",
+        "responseMode": "onReceived",
+        "responseCode": 200
+      }
+    },
+    {
+      "id": "email_appointment_confirmation",
+      "type": "n8n-nodes-base.emailSend",
+      "name": "Send Appointment Confirmation",
+      "position": [450, 500],
+      "parameters": {
+        "fromEmail": "citas@abogadosecuador.com",
+        "toEmail": "={{$json[\"user_email\"]}}",
+        "subject": "Confirmación de Cita - Abogados Ecuador",
+        "html": "<h2>Su cita ha sido agendada</h2><p>Fecha y hora: <strong>{{$json[\"start_at\"]}}</strong></p><p>Le enviaremos un recordatorio 24 horas antes de su cita.</p><p>Si necesita cancelar o reprogramar, puede hacerlo desde su panel de usuario.</p>"
+      }
+    },
+    {
+      "id": "whatsapp_appointment_reminder",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "WhatsApp Reminder",
+      "position": [650, 500],
+      "parameters": {
+        "url": "https://api.whatsapp.com/send",
+        "method": "POST",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsappApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "to",
+              "value": "={{$json[\"phone\"]}}"
+            },
+            {
+              "name": "type",
+              "value": "template"
+            },
+            {
+              "name": "template",
+              "value": {
+                "name": "appointment_reminder",
+                "language": {
+                  "code": "es"
+                },
+                "components": [
+                  {
+                    "type": "body",
+                    "parameters": [
+                      {
+                        "type": "text",
+                        "text": "{{$json[\"start_at\"]}}"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "webhook_payment_completed",
+      "type": "n8n-nodes-base.webhook",
+      "name": "Payment Completed Webhook",
+      "position": [250, 700],
+      "webhookId": "payment-completed",
+      "parameters": {
+        "path": "payment-completed",
+        "responseMode": "onReceived",
+        "responseCode": 200
+      }
+    },
+    {
+      "id": "supabase_update_payment",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Update Payment Status",
+      "position": [450, 700],
+      "parameters": {
+        "url": "https://kbybhgxqdefuquybstqk.supabase.co/rest/v1/payments",
+        "method": "PATCH",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "{{$credentials.apiKey}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$credentials.apiKey}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "eq.{{$json[\"payment_id\"]}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "completed"
+            },
+            {
+              "name": "paid_at",
+              "value": "={{$now.toISO()}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "email_payment_receipt",
+      "type": "n8n-nodes-base.emailSend",
+      "name": "Send Payment Receipt",
+      "position": [650, 700],
+      "parameters": {
+        "fromEmail": "pagos@abogadosecuador.com",
+        "toEmail": "={{$json[\"user_email\"]}}",
+        "subject": "Recibo de Pago - Abogados Ecuador",
+        "html": "<h2>Pago Procesado Exitosamente</h2><p>Monto: <strong>${{$json[\"amount\"]}} USD</strong></p><p>ID de Transacción: {{$json[\"order_id\"]}}</p><p>Fecha: {{$now.format('DD/MM/YYYY HH:mm')}}</p><p>Gracias por su pago.</p>"
+      }
+    },
+    {
+      "id": "schedule_daily_backup",
+      "type": "n8n-nodes-base.cron",
+      "name": "Daily Backup Schedule",
+      "position": [250, 900],
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyDay",
+              "hour": 3,
+              "minute": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "supabase_export_tables",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Export Critical Tables",
+      "position": [450, 900],
+      "parameters": {
+        "url": "https://kbybhgxqdefuquybstqk.supabase.co/rest/v1/rpc/export_critical_data",
+        "method": "POST",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi"
+      }
+    },
+    {
+      "id": "cloudinary_upload_backup",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Upload Backup to Cloudinary",
+      "position": [650, 900],
+      "parameters": {
+        "url": "https://api.cloudinary.com/v1_1/dg3s7tqoj/raw/upload",
+        "method": "POST",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "file",
+              "value": "={{$json[\"backup_data\"]}}"
+            },
+            {
+              "name": "upload_preset",
+              "value": "ml_default"
+            },
+            {
+              "name": "folder",
+              "value": "backups"
+            },
+            {
+              "name": "public_id",
+              "value": "backup_{{$now.format('YYYY-MM-DD')}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "webhook_form_submission",
+      "type": "n8n-nodes-base.webhook",
+      "name": "Form Submission Webhook",
+      "position": [250, 1100],
+      "webhookId": "form-submission",
+      "parameters": {
+        "path": "form-submission",
+        "responseMode": "onReceived",
+        "responseCode": 200
+      }
+    },
+    {
+      "id": "supabase_save_submission",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Save Form Submission",
+      "position": [450, 1100],
+      "parameters": {
+        "url": "https://kbybhgxqdefuquybstqk.supabase.co/rest/v1/form_submissions",
+        "method": "POST",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "form_type",
+              "value": "={{$json[\"form_type\"]}}"
+            },
+            {
+              "name": "data",
+              "value": "={{$json[\"data\"]}}"
+            },
+            {
+              "name": "status",
+              "value": "pending"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "slack_notification",
+      "type": "n8n-nodes-base.slack",
+      "name": "Notify Team",
+      "position": [650, 1100],
+      "parameters": {
+        "channel": "#leads",
+        "text": "Nueva consulta recibida:\nTipo: {{$json[\"form_type\"]}}\nNombre: {{$json[\"data\"][\"name\"]}}\nEmail: {{$json[\"data\"][\"email\"]}}\nMensaje: {{$json[\"data\"][\"message\"]}}"
+      }
+    }
+  ],
+  "connections": {
+    "webhook_user_registered": {
+      "main": [
+        [
+          {
+            "node": "email_welcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "webhook_appointment_created": {
+      "main": [
+        [
+          {
+            "node": "email_appointment_confirmation",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "whatsapp_appointment_reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "webhook_payment_completed": {
+      "main": [
+        [
+          {
+            "node": "supabase_update_payment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "supabase_update_payment": {
+      "main": [
+        [
+          {
+            "node": "email_payment_receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "schedule_daily_backup": {
+      "main": [
+        [
+          {
+            "node": "supabase_export_tables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "supabase_export_tables": {
+      "main": [
+        [
+          {
+            "node": "cloudinary_upload_backup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "webhook_form_submission": {
+      "main": [
+        [
+          {
+            "node": "supabase_save_submission",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "slack_notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "timezone": "America/Guayaquil",
+    "errorWorkflow": "",
+    "saveDataSuccessExecution": "all"
+  }
+}
