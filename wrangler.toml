@@ -9,26 +9,12 @@ workers_dev = true
 # Configurar el worker como un módulo ES para soportar bindings D1
 [build]
 command = "npm run build"
-[build.upload]
-format = "modules"
-dir = "."
-main = "./cloudflare-worker-clean.js"
 
 # Configuración simplificada para máxima compatibilidad
 [site]
 bucket = "./dist"
 
-# Configuración de KV y D1 Database
-[[kv_namespaces]]
-binding = "ABOGADO_WILSON_KV"
-id = "d977cf29acc749ba8aeabbcb2d395cb3"
-
-[[d1_databases]]
-binding = "ABOGADO_WILSON_DB"
-database_name = "abogado-wilson-db"
-database_id = "f00d15a2-6069-4f19-a8eb-6f2217af2176"
-
-# Configuración de entorno
+# Configuración de entorno (production)
 [env.production]
 name = "abogadosecuador"
 routes = [
@@ -36,7 +22,7 @@ routes = [
 ]
 
 # Variables de entorno - NOTA: Las claves sensibles deben configurarse mediante la UI de Cloudflare o CLI
-[vars]
+[env.production.vars]
 ENVIRONMENT = "production"
 CORS_ORIGIN = "*"
 API_ENABLED = "true"
@@ -48,10 +34,21 @@ N8N_WEBHOOK_URL = "https://n8nom.onrender.com/webhook/1cfd2baa-f5ec-4bc4-a99d-df
 WHATSAPP_NUMBER = "+59398835269"
 CONTACT_EMAIL = "Wifirmalegal@gmail.com"
 
+# KV Namespaces (production)
+[[env.production.kv_namespaces]]
+binding = "ABOGADO_WILSON_KV"
+id = "d977cf29acc749ba8aeabbcb2d395cb3"
+
+# D1 Databases (production)
+[[env.production.d1_databases]]
+binding = "ABOGADO_WILSON_DB"
+database_name = "abogado-wilson-db"
+database_id = "f00d15a2-6069-4f19-a8eb-6f2217af2176"
+
 # Secretos (para configurar mediante wrangler secret o la UI de Cloudflare)
-# wrangler secret put SUPABASE_KEY
-# wrangler secret put TURSO_AUTH_TOKEN
-# wrangler secret put JWT_SECRET
-# wrangler secret put CLOUDFLARE_API_TOKEN
-# wrangler secret put N8N_API_KEY
-# wrangler secret put TURNSTILE_SECRET_KEY
+# wrangler secret put SUPABASE_KEY --env production --name abogadosecuador
+# wrangler secret put TURSO_AUTH_TOKEN --env production --name abogadosecuador
+# wrangler secret put JWT_SECRET --env production --name abogadosecuador
+# wrangler secret put CLOUDFLARE_API_TOKEN --env production --name abogadosecuador
+# wrangler secret put N8N_API_KEY --env production --name abogadosecuador
+# wrangler secret put TURNSTILE_SECRET_KEY --env production --name abogadosecuador
