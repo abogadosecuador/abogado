@@ -34,3 +34,6 @@ node_modules/
 .tmp_*.json
 scripts/analyze-imports.cjs
 .tmp_*.json
+
+# Cloudflare Wrangler local config
+wrangler.local.toml

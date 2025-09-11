@@ -3,8 +3,6 @@
  * Sistema completo con diagnóstico automático y corrección de errores
  */
 
-import { getAssetFromKV } from '@cloudflare/kv-asset-handler';
-
 // Configuración de CORS profesional
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -114,8 +112,8 @@ class DiagnosticSystem {
       const supabaseUrl = 'https://kbybhgxqdefuquybstqk.supabase.co';
       const response = await fetch(`${supabaseUrl}/rest/v1/`, {
         headers: {
-          'apikey': this.env.SUPABASE_KEY,
-          'Authorization': `Bearer ${this.env.SUPABASE_KEY}`
+          'apikey': this.env.SUPABASE_ANON_KEY || '',
+          'Authorization': `Bearer ${this.env.SUPABASE_ANON_KEY || ''}`
         }
       });
       checks.supabase = response.ok;
@@ -123,15 +121,13 @@ class DiagnosticSystem {
       console.error('Supabase health check failed:', e);
     }
 
-    // Verificar Cloudinary
+    // Verificar Cloudinary (solo verifica acceso público de recursos sin exponer secretos)
     try {
-      const cloudinaryUrl = `https://api.cloudinary.com/v1_1/dg3s7tqoj/resources/image`;
-      const response = await fetch(cloudinaryUrl, {
-        headers: {
-          'Authorization': `Basic ${btoa('673776954212897:MOzrryrl-3w0abD2YftOWYOs3O8')}`
-        }
-      });
-      checks.cloudinary = response.ok;
+      const cloudName = this.env.CLOUDINARY_CLOUD_NAME || 'dg3s7tqoj';
+      // Hacer una solicitud simple a un endpoint público para validar DNS/respuesta
+      const pingUrl = `https://res.cloudinary.com/${cloudName}/image/upload/sample`;
+      const resp = await fetch(pingUrl, { method: 'HEAD' });
+      checks.cloudinary = resp.status === 200 || resp.status === 400;
     } catch (e) {
       console.error('Cloudinary health check failed:', e);
     }
@@ -194,13 +190,10 @@ class APIHandler {
   getConfig() {
     const config = {
       SUPABASE_URL: 'https://kbybhgxqdefuquybstqk.supabase.co',
-      SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWJoZ3hxZGVmdXF1eWJzdHFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NjAwODMsImV4cCI6MjA3MzEzNjA4M30.s1knFM9QXd8CH8TC0IOtBBBvb-qm2XYl_VlhVb-CqcE',
-      CLOUDINARY_CLOUD_NAME: 'dg3s7tqoj',
+      SUPABASE_ANON_KEY: this.env.SUPABASE_ANON_KEY || '',
+      CLOUDINARY_CLOUD_NAME: this.env.CLOUDINARY_CLOUD_NAME || 'dg3s7tqoj',
       CLOUDINARY_UPLOAD_PRESET: 'ml_default',
-      PAYPAL_CLIENT_ID: 'AWxKgr5n7ex5Lc3fDBOooaVHLgcAB-KCrYXgCmit9DpNXFIuBa6bUypYFjr-hAqARlILGxk_rRTsBZeS',
-      WHATSAPP_NUMBER: '+59398835269',
       CONTACT_EMAIL: 'Wifirmalegal@gmail.com',
-      N8N_WEBHOOK_URL: 'https://n8n-latest-hurl.onrender.com',
       APP_VERSION: '3.0.0',
       APP_ENV: 'production'
     };
@@ -253,8 +246,8 @@ class APIHandler {
       method: body.method || 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': this.env.SUPABASE_KEY,
-        'Authorization': `Bearer ${this.env.SUPABASE_KEY}`
+        'apikey': this.env.SUPABASE_ANON_KEY || '',
+        'Authorization': `Bearer ${this.env.SUPABASE_ANON_KEY || ''}`
       },
       body: body.data ? JSON.stringify(body.data) : undefined
     });
@@ -273,12 +266,13 @@ class APIHandler {
   async handleCloudinaryUpload(request) {
     const formData = await request.formData();
     
-    const cloudinaryUrl = 'https://api.cloudinary.com/v1_1/dg3s7tqoj/image/upload';
+    const cloudName = this.env.CLOUDINARY_CLOUD_NAME || 'dg3s7tqoj';
+    const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
     
     const uploadData = new FormData();
     uploadData.append('file', formData.get('file'));
     uploadData.append('upload_preset', 'ml_default');
-    uploadData.append('api_key', '673776954212897');
+    // Para uploads firmados, usar env.CLOUDINARY_API_KEY/SECRET y firma en servidor (no implementado aquí)
 
     const response = await fetch(cloudinaryUrl, {
       method: 'POST',
@@ -299,7 +293,9 @@ class APIHandler {
   async createPayPalOrder(request) {
     const body = await request.json();
     
-    const auth = btoa('AWxKgr5n7ex5Lc3fDBOooaVHLgcAB-KCrYXgCmit9DpNXFIuBa6bUypYFjr-hAqARlILGxk_rRTsBZeS:EO-ghpkDi_L5oQx9dkZPg3gABTs_UuWmsBtaexDyfYfXMhjbcJ3KK0LAuntr4zjoNSViGHZ_rkD7-YCt');
+    const clientId = this.env.PAYPAL_CLIENT_ID || '';
+    const clientSecret = this.env.PAYPAL_CLIENT_SECRET || '';
+    const auth = btoa(`${clientId}:${clientSecret}`);
     
     const response = await fetch('https://api-m.paypal.com/v2/checkout/orders', {
       method: 'POST',
@@ -516,17 +512,17 @@ export default {
   }
 };
 
-// Manejo de archivos estáticos
+// Manejo de archivos estáticos con Assets binding
 async function handleStaticAssets(request, env, ctx) {
   const url = new URL(request.url);
-  
+
   // Favicon especial
   if (url.pathname === '/favicon.ico' || url.pathname === '/favicon.svg') {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
       <rect width="100" height="100" rx="20" fill="#2563eb"/>
       <text x="50" y="70" font-size="60" text-anchor="middle" fill="white">⚖</text>
     </svg>`;
-    
+
     return new Response(svg, {
       status: 200,
       headers: {
@@ -537,127 +533,66 @@ async function handleStaticAssets(request, env, ctx) {
     });
   }
 
+  // Si la ruta no tiene extensión, servir index.html (SPA)
+  const isAssetPath = /\.[a-zA-Z0-9]{2,8}$/.test(url.pathname);
+  const assetRequest = isAssetPath ? request : new Request(new URL('/index.html', url.origin), request);
+
+  // Intentar servir desde ASSETS (Workers Assets binding)
   try {
-    const asset = await getAssetFromKV(
-      { request, waitUntil: ctx.waitUntil.bind(ctx) },
-      {
-        ASSET_NAMESPACE: env.__STATIC_CONTENT,
-        ASSET_MANIFEST: JSON.parse(env.__STATIC_CONTENT_MANIFEST),
-        mapRequestToAsset: (req) => {
-          const url = new URL(req.url);
-          if (!url.pathname.includes('.') && url.pathname !== '/') {
-            return new Request(`${url.origin}/index.html`, req);
-          }
-          return req;
-        },
-        cacheControl: {
-          byExtension: {
-            'html': { browserTTL: 0, edgeTTL: 300 },
-            'js': { browserTTL: 86400, edgeTTL: 86400 },
-            'css': { browserTTL: 86400, edgeTTL: 86400 },
-            'png': { browserTTL: 604800, edgeTTL: 604800 },
-            'jpg': { browserTTL: 604800, edgeTTL: 604800 },
-            'jpeg': { browserTTL: 604800, edgeTTL: 604800 },
-            'svg': { browserTTL: 604800, edgeTTL: 604800 },
-            'ico': { browserTTL: 604800, edgeTTL: 604800 }
-          }
-        }
-      }
-    );
-
-    const headers = new Headers(asset.headers);
-    Object.entries(corsHeaders).forEach(([key, value]) => {
-      headers.set(key, value);
-    });
-
-    return new Response(asset.body, {
-      status: 200,
-      headers
-    });
-  } catch (e) {
-    // Fallback a index.html para SPA
-    try {
-      const asset = await getAssetFromKV(
-        { 
-          request: new Request(`${url.origin}/index.html`, request),
-          waitUntil: ctx.waitUntil.bind(ctx)
-        },
-        {
-          ASSET_NAMESPACE: env.__STATIC_CONTENT,
-          ASSET_MANIFEST: JSON.parse(env.__STATIC_CONTENT_MANIFEST)
-        }
-      );
-
-      const headers = new Headers(asset.headers);
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        headers.set(key, value);
-      });
-
-      return new Response(asset.body, {
-        status: 200,
-        headers
-      });
-    } catch (fallbackError) {
-      // HTML de emergencia
-      return new Response(`
-        <!DOCTYPE html>
-        <html lang="es">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Abogados Ecuador</title>
-          <style>
-            body {
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-              background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-              color: white;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              height: 100vh;
-              margin: 0;
-            }
-            .container {
-              text-align: center;
-              padding: 2rem;
-            }
-            h1 { font-size: 3rem; margin-bottom: 1rem; }
-            p { font-size: 1.2rem; opacity: 0.9; }
-            .spinner {
-              border: 3px solid rgba(255,255,255,0.3);
-              border-top: 3px solid white;
-              border-radius: 50%;
-              width: 40px;
-              height: 40px;
-              animation: spin 1s linear infinite;
-              margin: 2rem auto;
-            }
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          </style>
-          <script>
-            setTimeout(() => {
-              window.location.reload();
-            }, 3000);
-          </script>
-        </head>
-        <body>
-          <div class="container">
-            <h1>⚖ Abogados Ecuador</h1>
-            <p>Cargando aplicación...</p>
-            <div class="spinner"></div>
-          </div>
-        </body>
-        </html>
-      `, {
-        status: 200,
-        headers: {
-          'Content-Type': 'text/html; charset=utf-8',
-          ...corsHeaders
-        }
-      });
+    const assetResponse = await env.ASSETS.fetch(assetRequest);
+    if (assetResponse && assetResponse.ok) {
+      const headers = new Headers(assetResponse.headers);
+      Object.entries(corsHeaders).forEach(([k, v]) => headers.set(k, v));
+      return new Response(assetResponse.body, { status: assetResponse.status, headers });
     }
+  } catch (e) {
+    // Continuar a fallback HTML si falla
   }
+
+  // HTML de emergencia si no se pudo servir el asset
+  return new Response(`
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Abogados Ecuador</title>
+      <style>
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+          color: white;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          margin: 0;
+        }
+        .container { text-align: center; padding: 2rem; }
+        h1 { font-size: 3rem; margin-bottom: 1rem; }
+        p { font-size: 1.2rem; opacity: 0.9; }
+        .spinner {
+          border: 3px solid rgba(255,255,255,0.3);
+          border-top: 3px solid white;
+          border-radius: 50%;
+          width: 40px;
+          height: 40px;
+          animation: spin 1s linear infinite;
+          margin: 2rem auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>⚖ Abogados Ecuador</h1>
+        <p>Cargando aplicación...</p>
+        <div class="spinner"></div>
+      </div>
+    </body>
+    </html>
+  `, {
+    status: 200,
+    headers: { 'Content-Type': 'text/html; charset=utf-8', ...corsHeaders }
+  });
 }
