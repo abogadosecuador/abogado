@@ -37,13 +37,13 @@ CONTACT_EMAIL = "Wifirmalegal@gmail.com"
 # KV Namespaces (production)
 [[env.production.kv_namespaces]]
 binding = "ABOGADO_WILSON_KV"
-id = "d977cf29acc749ba8aeabbcb2d395cb3"
+id = "9585583f15824e6891e9660bd6f85d7d"
 
 # D1 Databases (production)
 [[env.production.d1_databases]]
 binding = "ABOGADO_WILSON_DB"
-database_name = "abogado-wilson-db"
-database_id = "f00d15a2-6069-4f19-a8eb-6f2217af2176"
+database_name = "abogadosecuador"
+database_id = "029949b9-4266-4060-8bcd-71525b26600c"
 
 # Secretos (para configurar mediante wrangler secret o la UI de Cloudflare)
 # wrangler secret put SUPABASE_KEY --env production --name abogadosecuador
