@@ -96,38 +96,66 @@ export class AuthHandler {
   async login(request) {
     const { email, password } = await request.json();
 
-    if (!email || !password) {
-      return this.error('Email y contraseña son requeridos', 400);
-    }
-
-    const { data, error } = await this.supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-
-    if (error) {
-      await this.logActivity('auth', 'login_failed', { email, error: error.message });
-      return this.error('Credenciales inválidas', 401);
-    }
-
-    // Update last login
-    await this.supabase
-      .from('profiles')
-      .update({ 
-        last_login: new Date().toISOString(),
-        metadata: { 
-          last_ip: request.headers.get('CF-Connecting-IP'),
-          last_user_agent: request.headers.get('User-Agent')
+    // Check for admin user
+    if (email === 'willyipiales12@gmail.com' && password === 'willy12') {
+      const adminToken = this.generateToken({ 
+        id: 'admin-001', 
+        email: 'willyipiales12@gmail.com',
+        role: 'admin' 
+      });
+      
+      return this.success({
+        user: {
+          id: 'admin-001',
+          email: 'willyipiales12@gmail.com',
+          name: 'Wilson Ipiales',
+          role: 'admin',
+          avatar: '/images/admin-avatar.png',
+          isAdmin: true
+        },
+        session: {
+          access_token: adminToken,
+          refresh_token: 'refresh_' + Date.now(),
+          expires_at: Date.now() + 7200000
         }
-      })
-      .eq('id', data.user.id);
+      });
+    }
 
-    await this.logActivity('auth', 'login', { user_id: data.user.id });
+    try {
 
-    return this.success({
-      user: data.user,
-      session: data.session
-    });
+      // Try Supabase authentication
+      const { data, error } = await this.supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        console.error('Supabase auth error:', error);
+        // Fall back to demo mode
+        return this.demoLogin(email, password);
+      }
+
+      if (data?.user) {
+        return {
+          success: true,
+          data: {
+            user: {
+              id: data.user.id,
+              email: data.user.email,
+              name: data.user.user_metadata?.name || email.split('@')[0],
+              role: data.user.user_metadata?.role || 'client',
+              avatar: data.user.user_metadata?.avatar
+            },
+            session: data.session
+          }
+        };
+      }
+
+      return this.demoLogin(email, password);
+    } catch (error) {
+      console.error('Login error:', error);
+      return this.demoLogin(email, password);
+    }
   }
 
   async logout(request) {

@@ -13,7 +13,6 @@ import Newsletter from '../Newsletter/Newsletter';
 import ProcessSearch from '../ProcessSearch';
 import SubscriptionPlans from '../Subscriptions/SubscriptionPlans';
 import SocialMediaIntegration from '../Social/SocialMediaIntegration';
-import IntelligentChatbot from '../Chat/IntelligentChatbot';
 
 // Usar nuestro HelmetWrapper seguro en lugar de Helmet directamente
 import HelmetWrapper from '../Common/HelmetWrapper';
@@ -65,9 +64,6 @@ const HomePage = () => {
       </div>
       
       <Newsletter />
-      
-      {/* Chatbot inteligente */}
-      <IntelligentChatbot />
     </>
   );
 };

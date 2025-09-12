@@ -8,55 +8,34 @@ import { useCart } from '../../context/CartContext';
 
 const mainNavigation = [
   { name: 'Inicio', href: '/', current: false },
-  { name: 'Servicios', href: '/servicios', current: false, icon: <FaGavel className="text-blue-600" /> },
-  { name: 'Consultas', href: '#', current: false, hasSubmenu: true, icon: <FaFileAlt className="text-blue-600" /> },
-  { name: 'Productos', href: '#', current: false, hasSubmenu: true, icon: <FaStore className="text-blue-600" /> },
-  { name: 'Calendario', href: '/calendario', current: false, icon: <FaBook className="text-blue-600" /> },
-  { name: 'Comunidad', href: '#', current: false, hasSubmenu: true, icon: <FaUsers className="text-blue-600" /> },
-  { name: 'Contacto', href: '/contacto', current: false, icon: <FaEnvelope className="text-blue-600" /> },
+  { name: 'Servicios', href: '/services', current: false, hasSubmenu: true },
+  { name: 'Productos', href: '#', current: false, hasSubmenu: true },
+  { name: 'Consultas', href: '/consultations', current: false },
+  { name: 'Blog', href: '/blog', current: false },
+  { name: 'Contacto', href: '/contact', current: false },
 ];
 
 const serviceSubmenu = [
-  { name: 'Derecho Penal', href: '/servicios/penal', current: false, icon: <FaGavel className="text-red-500" /> },
-  { name: 'Derecho Civil', href: '/servicios/civil', current: false, icon: <FaFileContract className="text-blue-500" /> },
-  { name: 'Derecho Comercial', href: '/servicios/comercial', current: false, icon: <FaFileAlt className="text-green-500" /> },
-  { name: 'Derecho de Tránsito', href: '/servicios/transito', current: false, icon: <FaFileAlt className="text-yellow-500" /> },
-  { name: 'Derecho Aduanero', href: '/servicios/aduanas', current: false, icon: <FaFileAlt className="text-purple-500" /> },
+  { name: 'Penal', href: '/services/penal' },
+  { name: 'Civil', href: '/services/civil' },
+  { name: 'Comercial', href: '/services/comercial' },
+  { name: 'Tránsito', href: '/services/transito' },
+  { name: 'Aduanero', href: '/services/aduanas' },
 ];
 
-const consultasSubmenu = [
-  { name: 'Consulta General', href: '/consulta-general', current: false, icon: <FaFileAlt className="text-blue-500" /> },
-  { name: 'Consultas Civiles', href: '/consultas/civiles', current: false, icon: <FaFileContract className="text-green-500" /> },
-  { name: 'Consultas Penales', href: '/consultas/penales', current: false, icon: <FaGavel className="text-red-500" /> },
-  { name: 'Consultas de Tránsito', href: '/servicios/transito', current: false, icon: <FaFileAlt className="text-yellow-500" /> },
-  { name: 'Consulta con IA', href: '/consulta-ia', current: false, icon: <FaUserTie className="text-purple-500" /> },
-];
+// Removed consultasSubmenu - not needed anymore
 
-const comunidadSubmenu = [
-  { name: 'Programa de Afiliados', href: '/afiliados', current: false, icon: <FaUsers className="text-blue-500" /> },
-  { name: 'Programa de Referidos', href: '/referidos', current: false, icon: <FaHandshake className="text-green-500" /> },
-  { name: 'Testimonios', href: '/testimonios', current: false, icon: <FaComments className="text-yellow-500" /> },
-  { name: 'Foro Legal', href: '/foro', current: false, icon: <FaComments className="text-purple-500" /> },
-  { name: 'Blog Legal', href: '/blog-legal', current: false, icon: <FaBook className="text-purple-500" /> },
-  { name: 'Newsletter', href: '/newsletter', current: false, icon: <FaEnvelope className="text-orange-500" /> },
-  { name: 'E-Books', href: '/ebooks', current: false, icon: <FaBook className="text-indigo-500" /> },
-];
+// Removed comunidadSubmenu - simplified navigation
 
 // Nuevo submenú para Productos
 const productosSubmenu = [
-  { name: 'Todos los Productos', href: '/productos', current: false, icon: <FaStore className="text-blue-500" /> },
-  { name: 'E-Books Legales', href: '/ebooks', current: false, icon: <FaBook className="text-green-500" /> },
-  { name: 'Cursos Online', href: '/cursos', current: false, icon: <FaBook className="text-purple-500" /> },
-  { name: 'Planes de Suscripción', href: '/planes', current: false, icon: <FaShieldAlt className="text-indigo-500" /> },
-  { name: 'Tienda Legal', href: '/tienda', current: false, icon: <FaStore className="text-orange-500" /> },
+  { name: 'Catálogo', href: '/catalog' },
+  { name: 'Cursos', href: '/courses' },
+  { name: 'E-Books', href: '/ebooks' },
+  { name: 'Planes', href: '/plans' },
 ];
 
-// Submenú para Políticas y Seguridad
-const policySubmenu = [
-  { name: 'Política de Privacidad', href: '/privacidad', current: false, icon: <FaShieldAlt className="text-gray-500" /> },
-  { name: 'Términos y Condiciones', href: '/terminos', current: false, icon: <FaFileContract className="text-gray-500" /> },
-  { name: 'Seguridad', href: '/seguridad', current: false, icon: <FaLock className="text-gray-500" /> },
-];
+// Removed policySubmenu - simplified navigation
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
@@ -113,14 +92,7 @@ function Navbar() {
              (item.href !== '#' && item.href !== '/' && location.pathname.includes(item.href))
   }));
 
-  // Añadir entrada para Políticas y Seguridad
-  const allNavigation = [...updatedNavigation, { 
-    name: 'Políticas', 
-    href: '#', 
-    current: location.pathname === '/privacidad' || location.pathname === '/terminos' || location.pathname === '/seguridad', 
-    hasSubmenu: true, 
-    icon: <FaShieldAlt className="text-blue-600" /> 
-  }];
+  const allNavigation = updatedNavigation;
 
   return (
     <Disclosure as="nav" className="bg-white shadow-lg sticky top-0 z-50">
@@ -144,9 +116,16 @@ function Navbar() {
               </div>
 
               {/* Desktop navigation */}
-              <div className="flex flex-1 items-center justify-center sm:justify-start overflow-x-hidden">
-                {/* Logo completely removed as requested */}
-                <div className="hidden sm:ml-6 sm:flex flex-wrap gap-x-2 gap-y-2 md:gap-x-4 max-w-full">
+              <div className="flex flex-1 items-center justify-between">
+                {/* Logo */}
+                <Link to="/" className="flex items-center">
+                  <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    Abogados Ecuador
+                  </span>
+                </Link>
+                
+                {/* Navigation */}
+                <div className="hidden md:flex items-center space-x-1">
                   {allNavigation.map((item) => 
                     item.hasSubmenu ? (
                       <Popover className="relative" key={item.name}>
@@ -155,10 +134,9 @@ function Navbar() {
                             <Popover.Button
                               className={classNames(
                                 item.current ? 'bg-blue-700 text-white' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700',
-                                'rounded-md px-3 py-2 text-sm font-medium flex items-center group transition-colors'
+                                'rounded-md px-3 py-2 text-sm font-medium flex items-center transition-all duration-200'
                               )}
                             >
-                              <span className="mr-1">{item.icon}</span>
                               <span>{item.name}</span>
                               <ChevronDownIcon 
                                 className={classNames(
@@ -181,10 +159,7 @@ function Navbar() {
                                 <div className="rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
                                   <div className="relative grid gap-1 p-2">
                                     {(item.name === 'Servicios' ? serviceSubmenu : 
-                                      item.name === 'Consultas' ? consultasSubmenu : 
-                                      item.name === 'Productos' ? productosSubmenu :
-                                      item.name === 'Comunidad' ? comunidadSubmenu :
-                                      item.name === 'Políticas' ? policySubmenu : []).map((subItem) => (
+                                      item.name === 'Productos' ? productosSubmenu : []).map((subItem) => (
                                       <Link
                                         key={subItem.name}
                                         to={subItem.href}
@@ -193,7 +168,6 @@ function Navbar() {
                                           'flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors'
                                         )}
                                       >
-                                        <span className="mr-2">{subItem.icon}</span>
                                         <span>{subItem.name}</span>
                                       </Link>
                                     ))}
@@ -210,10 +184,9 @@ function Navbar() {
                         to={item.href}
                         className={classNames(
                           item.current ? 'bg-blue-700 text-white' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700',
-                          'rounded-md px-3 py-2 text-sm font-medium flex items-center transition-colors'
+                          'rounded-md px-3 py-2 text-sm font-medium transition-all duration-200'
                         )}
                       >
-                        <span className="mr-1">{item.icon}</span>
                         <span>{item.name}</span>
                       </Link>
                     )
@@ -377,27 +350,16 @@ function Navbar() {
                           )}
                         </Menu.Item>
                       </Menu.Items>
-                    </Transition>
-                  </Menu>
-                ) : (
-                  <div className="flex space-x-1">
-                    <Link
-                      to="/registro"
-                      className="inline-flex items-center p-1.5 text-xs font-medium rounded text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100"
-                    >
-                      <FaUserPlus className="mr-1" /> Registrarse
-                    </Link>
-                    <Link
-                      to="/login"
-                      className="inline-flex items-center p-1.5 text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700"
-                    >
-                      <FaSignInAlt className="mr-1" /> Iniciar Sesión
-                    </Link>
                   </div>
-                )}
-                
-                {/* Contact Action Buttons - Hidden on small screens */}
-                <div className="hidden md:flex md:items-center space-x-1">
+                  
+                  {/* Mobile Authentication Buttons */}
+                  {!session && (
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Mi Cuenta</h3>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Link
+                          to="/login"
+                          className="flex items-center justify-center p-2 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
                   <a 
                     href="tel:+593988835269" 
                     className="inline-flex items-center p-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors duration-200"

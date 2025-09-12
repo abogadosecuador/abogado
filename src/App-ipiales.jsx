@@ -92,7 +92,6 @@ const Aduanas = lazy(() => import('./components/Services/Aduanas'));
 // Componentes de chat
 const WhatsAppChat = lazy(() => import('./components/Chat/WhatsAppChat'));
 const LiveChat = lazy(() => import('./components/Chat/LiveChat'));
-const AILegalChatbot = lazy(() => import('./components/Chat/AILegalChatbot'));
 // Juegos
 const TicTacToe = lazy(() => import('./components/Games/TicTacToe'));
 
@@ -332,7 +331,6 @@ function AppContent() {
       <Footer />
       <CookieConsent />
       <WhatsAppChat />
-      <AILegalChatbot />
     </>
   );
 }

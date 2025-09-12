@@ -3,6 +3,7 @@ main = "_worker.js"
 compatibility_date = "2025-01-01"
 account_id = "06ea65e2b51d0f23f0c44f92962ac95d"
 workers_dev = true
+route = { pattern = "abogadosecuador.workers.dev/*", zone_name = "workers.dev" }
 
 # Build configuration
 [build]
@@ -36,6 +37,7 @@ WHATSAPP_NUMBER = "+59398835269"
 CONTACT_EMAIL = "Wifirmalegal@gmail.com"
 CLOUDINARY_CLOUD_NAME = "dg3s7tqoj"
 APP_URL = "https://abogadosecuador.workers.dev"
+API_URL = "https://abogadosecuador.workers.dev/api"
 
 # Production environment
 #[env.production]
