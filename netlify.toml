@@ -31,8 +31,7 @@
     Cache-Control = "public, max-age=31536000"
 
 # Configuración para CloudFlare
-[build.environment]
-  CLOUDFLARE_API_TOKEN = "null_token"
+# Nota: No fijar CLOUDFLARE_API_TOKEN aquí. Configúralo como variable de entorno en Netlify UI.
 
 # Trabajador para manejar funciones
 [functions]

@@ -25,41 +25,25 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci --prefer-offline --no-audit
-          npm install -g wrangler
         
       - name: Build project
         run: |
           npm run build
           echo "Build completed successfully"
         
-      - name: Configure Cloudflare Secrets
-        run: |
-          echo "Configurando secretos de Cloudflare..."
-          wrangler secret put SUPABASE_KEY --name abogadosecuador <<< "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWJoZ3hxZGVmdXF1eWJzdHFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NjAwODMsImV4cCI6MjA3MzEzNjA4M30.s1knFM9QXd8CH8TC0IOtBBBvb-qm2XYl_VlhVb-CqcE" || true
-          wrangler secret put CLOUDINARY_API_SECRET --name abogadosecuador <<< "MOzrryrl-3w0abD2YftOWYOs3O8" || true
-          wrangler secret put PAYPAL_SECRET --name abogadosecuador <<< "EO-ghpkDi_L5oQx9dkZPg3gABTs_UuWmsBtaexDyfYfXMhjbcJ3KK0LAuntr4zjoNSViGHZ_rkD7-YCt" || true
-          wrangler secret put WHATSAPP_API_TOKEN --name abogadosecuador <<< "${{ secrets.WHATSAPP_API_TOKEN }}" || true
-          wrangler secret put JWT_SECRET --name abogadosecuador <<< "${{ secrets.JWT_SECRET }}" || true
-        env:
-          CLOUDFLARE_API_TOKEN: GL1rUyHBtNSYZXQnZfeOpgs_kMc_BdEJ6mX2pJQW
-          CLOUDFLARE_ACCOUNT_ID: 06ea65e2b51d0f23f0c44f92962ac95d
-        
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: GL1rUyHBtNSYZXQnZfeOpgs_kMc_BdEJ6mX2pJQW
-          accountId: 06ea65e2b51d0f23f0c44f92962ac95d
-          command: deploy --env production
-          environment: production
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+          wranglerVersion: '4.36.0'
           secrets: |
             SUPABASE_KEY
             CLOUDINARY_API_SECRET
             PAYPAL_SECRET
             WHATSAPP_API_TOKEN
             JWT_SECRET
-        env:
-          CLOUDFLARE_API_TOKEN: GL1rUyHBtNSYZXQnZfeOpgs_kMc_BdEJ6mX2pJQW
-          CLOUDFLARE_ACCOUNT_ID: 06ea65e2b51d0f23f0c44f92962ac95d
       
       - name: Verify deployment
         run: |
