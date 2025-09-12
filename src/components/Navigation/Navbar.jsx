@@ -16,7 +16,7 @@ import {
   BookOpen,
   FileText,
   Users,
-  ShieldAlt,
+  Shield,
   Briefcase,
   Gavel,
   Home,
@@ -69,7 +69,7 @@ const Navbar = () => {
       href: '/services',
       icon: <Gavel className="w-4 h-4" />,
       dropdown: [
-        { name: 'Derecho Penal', href: '/services/penal', icon: <ShieldAlt className="w-4 h-4" /> },
+        { name: 'Derecho Penal', href: '/services/penal', icon: <Shield className="w-4 h-4" /> },
         { name: 'Derecho Civil', href: '/services/civil', icon: <FileText className="w-4 h-4" /> },
         { name: 'Derecho Comercial', href: '/services/comercial', icon: <Briefcase className="w-4 h-4" /> },
         { name: 'Tránsito', href: '/services/transito', icon: <FileText className="w-4 h-4" /> },
