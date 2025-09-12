@@ -1,502 +1,341 @@
-import { Fragment, useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, Fragment } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Disclosure, Menu, Transition, Popover } from '@headlessui/react';
-import { Bars3Icon, XMarkIcon, ChevronDownIcon, UserIcon, ShoppingCartIcon } from '@heroicons/react/24/outline';
-import { FaUsers, FaHandshake, FaComments, FaGavel, FaBook, FaShieldAlt, FaFileContract, FaFileAlt, FaUserTie, FaWhatsapp, FaPhone, FaEnvelope, FaUserPlus, FaSignInAlt, FaLock, FaShoppingCart, FaStore } from 'react-icons/fa';
-import { authService, dataService } from '../../services/apiService';
-import { useCart } from '../../context/CartContext';
+import { 
+  Menu as MenuIcon, 
+  X, 
+  ChevronDown, 
+  User, 
+  ShoppingCart as ShoppingCartIcon, 
+  Phone, 
+  Mail, 
+  LogIn, 
+  UserPlus,
+  LogOut,
+  LayoutDashboard,
+  BookOpen,
+  FileText,
+  Users,
+  ShieldAlt,
+  Briefcase,
+  Gavel,
+  Home,
+  MessageSquare
+} from 'lucide-react';
+import { useAuthStore } from '../../stores/authStore';
+import { useCartStore } from '../../stores/cartStore';
+import { FaWhatsapp, FaSignInAlt, FaUserPlus as FaUserPlusIcon } from 'react-icons/fa';
 
-const mainNavigation = [
-  { name: 'Inicio', href: '/', current: false },
-  { name: 'Servicios', href: '/services', current: false, hasSubmenu: true },
-  { name: 'Productos', href: '#', current: false, hasSubmenu: true },
-  { name: 'Consultas', href: '/consultations', current: false },
-  { name: 'Blog', href: '/blog', current: false },
-  { name: 'Contacto', href: '/contact', current: false },
-];
-
-const serviceSubmenu = [
-  { name: 'Penal', href: '/services/penal' },
-  { name: 'Civil', href: '/services/civil' },
-  { name: 'Comercial', href: '/services/comercial' },
-  { name: 'Tránsito', href: '/services/transito' },
-  { name: 'Aduanero', href: '/services/aduanas' },
-];
-
-// Removed consultasSubmenu - not needed anymore
-
-// Removed comunidadSubmenu - simplified navigation
-
-// Nuevo submenú para Productos
-const productosSubmenu = [
-  { name: 'Catálogo', href: '/catalog' },
-  { name: 'Cursos', href: '/courses' },
-  { name: 'E-Books', href: '/ebooks' },
-  { name: 'Planes', href: '/plans' },
-];
-
-// Removed policySubmenu - simplified navigation
-
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ');
-}
-
-function Navbar() {
-  const [session, setSession] = useState(null);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false);
+const Navbar = () => {
   const location = useLocation();
-  const { items, total, removeFromCart } = useCart();
+  const navigate = useNavigate();
+  const { user, logout } = useAuthStore();
+  const { items, total, removeFromCart } = useCartStore();
+  const [isOpen, setIsOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState({});
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
+  // Close dropdowns when clicking outside
   useEffect(() => {
-    // Establecer la sesión inicial
-    const setInitialSession = async () => {
-      try {
-        // Verificar si hay un token en localStorage
-        const token = localStorage.getItem('authToken');
-        if (token) {
-          const { user } = await authService.getCurrentUser();
-          setSession({ user });
-        } else {
-          setSession(null);
-        }
-      } catch (error) {
-        console.error('Error al obtener la sesión inicial:', error);
-        setSession(null);
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.dropdown-container')) {
+        setDropdownOpen({});
+        setUserMenuOpen(false);
+        setIsCartOpen(false);
       }
     };
-    setInitialSession();
-
-    // Simplificamos la lógica de escucha de cambios de autenticación
-    const handleAuthChange = () => {
-      const token = localStorage.getItem('authToken');
-      if (token) {
-        authService.getCurrentUser().then(({ user }) => {
-          if (user) setSession({ user });
-        });
-      } else {
-        setSession(null);
-      }
-    };
-
-    // Comprobamos cada 5 segundos si el token cambió
-    const interval = setInterval(handleAuthChange, 5000);
-    
-    // Limpiar el intervalo al desmontar
-    return () => clearInterval(interval);
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
-  const updatedNavigation = mainNavigation.map(item => ({
-    ...item,
-    current: location.pathname === item.href || 
-             (item.href !== '#' && item.href !== '/' && location.pathname.includes(item.href))
-  }));
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+    setUserMenuOpen(false);
+  };
 
-  const allNavigation = updatedNavigation;
+  const toggleDropdown = (name) => {
+    setDropdownOpen(prev => ({
+      ...prev,
+      [name]: !prev[name]
+    }));
+  };
+
+  const navigation = [
+    { name: 'Inicio', href: '/', icon: <Home className="w-4 h-4" /> },
+    { 
+      name: 'Servicios', 
+      href: '/services',
+      icon: <Gavel className="w-4 h-4" />,
+      dropdown: [
+        { name: 'Derecho Penal', href: '/services/penal', icon: <ShieldAlt className="w-4 h-4" /> },
+        { name: 'Derecho Civil', href: '/services/civil', icon: <FileText className="w-4 h-4" /> },
+        { name: 'Derecho Comercial', href: '/services/comercial', icon: <Briefcase className="w-4 h-4" /> },
+        { name: 'Tránsito', href: '/services/transito', icon: <FileText className="w-4 h-4" /> },
+        { name: 'Aduanero', href: '/services/aduanas', icon: <FileText className="w-4 h-4" /> }
+      ]
+    },
+    { 
+      name: 'Productos', 
+      href: '/productos',
+      icon: <ShoppingCartIcon className="w-4 h-4" />,
+      dropdown: [
+        { name: 'Catálogo', href: '/catalog', icon: <ShoppingCartIcon className="w-4 h-4" /> },
+        { name: 'Cursos', href: '/courses', icon: <BookOpen className="w-4 h-4" /> },
+        { name: 'E-Books', href: '/ebooks', icon: <BookOpen className="w-4 h-4" /> },
+        { name: 'Tienda', href: '/tienda', icon: <ShoppingCartIcon className="w-4 h-4" /> }
+      ]
+    },
+    { name: 'Consultas', href: '/consulta-gratis', icon: <MessageSquare className="w-4 h-4" /> },
+    { name: 'Blog', href: '/blog', icon: <BookOpen className="w-4 h-4" /> },
+    { name: 'Contacto', href: '/contacto', icon: <Phone className="w-4 h-4" /> }
+  ];
+
+  const isActive = (path) => location.pathname === path;
 
   return (
-    <Disclosure as="nav" className="bg-white shadow-lg sticky top-0 z-50">
-      {({ open }) => (
-        <>
-          <div className="mx-auto px-4 sm:px-6 lg:px-8 w-full max-w-screen-xl overflow-x-hidden">
-            <div className="relative flex h-16 items-center justify-between">
-              {/* Mobile menu button */}
-              <div className="absolute inset-y-0 left-0 flex items-center sm:hidden z-50">
-                <Disclosure.Button className="relative inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
-                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                >
-                  <span className="absolute -inset-0.5" />
-                  <span className="sr-only">Abrir menú principal</span>
-                  {open ? (
-                    <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
-                  ) : (
-                    <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
-                  )}
-                </Disclosure.Button>
+    <nav className="bg-white shadow-lg sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          {/* Logo */}
+          <div className="flex items-center">
+            <Link to="/" className="flex items-center space-x-2">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-xl">AE</span>
               </div>
-
-              {/* Desktop navigation */}
-              <div className="flex flex-1 items-center justify-between">
-                {/* Logo */}
-                <Link to="/" className="flex items-center">
-                  <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    Abogados Ecuador
-                  </span>
-                </Link>
-                
-                {/* Navigation */}
-                <div className="hidden md:flex items-center space-x-1">
-                  {allNavigation.map((item) => 
-                    item.hasSubmenu ? (
-                      <Popover className="relative" key={item.name}>
-                        {({ open }) => (
-                          <>
-                            <Popover.Button
-                              className={classNames(
-                                item.current ? 'bg-blue-700 text-white' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700',
-                                'rounded-md px-3 py-2 text-sm font-medium flex items-center transition-all duration-200'
-                              )}
-                            >
-                              <span>{item.name}</span>
-                              <ChevronDownIcon 
-                                className={classNames(
-                                  'ml-1 h-4 w-4 transition-transform',
-                                  open ? 'rotate-180 transform' : ''
-                                )}
-                              />
-                            </Popover.Button>
-
-                            <Transition
-                              as={Fragment}
-                              enter="transition ease-out duration-200"
-                              enterFrom="opacity-0 translate-y-1"
-                              enterTo="opacity-100 translate-y-0"
-                              leave="transition ease-in duration-150"
-                              leaveFrom="opacity-100 translate-y-0"
-                              leaveTo="opacity-0 translate-y-1"
-                            >
-                              <Popover.Panel className="absolute left-1/2 z-50 mt-1 w-56 -translate-x-1/2 transform">
-                                <div className="rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
-                                  <div className="relative grid gap-1 p-2">
-                                    {(item.name === 'Servicios' ? serviceSubmenu : 
-                                      item.name === 'Productos' ? productosSubmenu : []).map((subItem) => (
-                                      <Link
-                                        key={subItem.name}
-                                        to={subItem.href}
-                                        className={classNames(
-                                          subItem.current ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700',
-                                          'flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors'
-                                        )}
-                                      >
-                                        <span>{subItem.name}</span>
-                                      </Link>
-                                    ))}
-                                  </div>
-                                </div>
-                              </Popover.Panel>
-                            </Transition>
-                          </>
-                        )}
-                      </Popover>
-                    ) : (
-                      <Link
-                        key={item.name}
-                        to={item.href}
-                        className={classNames(
-                          item.current ? 'bg-blue-700 text-white' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700',
-                          'rounded-md px-3 py-2 text-sm font-medium transition-all duration-200'
-                        )}
-                      >
-                        <span>{item.name}</span>
-                      </Link>
-                    )
-                  )}
-                </div>
-              </div>
-
-              {/* Right side buttons */}
-              <div className="absolute inset-y-0 right-0 flex items-center space-x-1 sm:static sm:space-x-2">
-                {/* Cart Button Professional */}
-                <div className="relative">
-                  <button
-                    onClick={() => setIsCartOpen(!isCartOpen)}
-                    className="relative p-2.5 bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 rounded-lg transition-all duration-200 group"
-                  >
-                    <ShoppingCartIcon className="h-6 w-6 text-gray-700 group-hover:text-blue-600 transition-colors" />
-                    {items && items.length > 0 && (
-                      <span className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold flex items-center justify-center shadow-lg animate-pulse">
-                        {items.length}
-                      </span>
-                    )}
-                  </button>
-                  
-                  {/* Cart Dropdown Professional */}
-                  {isCartOpen && (
-                    <div className="absolute right-0 mt-3 w-96 bg-white rounded-xl shadow-2xl z-50 border border-gray-100 overflow-hidden">
-                      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4">
-                        <h3 className="font-bold text-lg flex items-center">
-                          <ShoppingCartIcon className="h-5 w-5 mr-2" />
-                          Carrito de Compras
-                        </h3>
-                        <p className="text-xs text-blue-100 mt-1">{items?.length || 0} artículos</p>
-                      </div>
-                      <div className="p-4">
-                        {items && items.length > 0 ? (
-                          <>
-                            <div className="space-y-3 max-h-72 overflow-y-auto pr-2 custom-scrollbar">
-                              {items.map((item, index) => (
-                                <div key={index} className="flex items-center gap-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg hover:shadow-md transition-all">
-                                  <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <ShoppingCartIcon className="h-6 w-6 text-blue-600" />
-                                  </div>
-                                  <div className="flex-1">
-                                    <p className="text-sm font-semibold text-gray-800 line-clamp-1">{item.name}</p>
-                                    <div className="flex items-center gap-2 mt-1">
-                                      <span className="text-xs text-gray-500">Cant: {item.quantity || 1}</span>
-                                      <span className="text-xs text-gray-400">•</span>
-                                      <span className="text-xs font-medium text-blue-600">${(item.price * (item.quantity || 1)).toFixed(2)}</span>
-                                    </div>
-                                  </div>
-                                  <button
-                                    onClick={() => removeFromCart(item.id, item.type)}
-                                    className="p-1.5 hover:bg-red-50 rounded-lg text-red-400 hover:text-red-600 transition-colors"
-                                  >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                            <div className="mt-4 pt-4 border-t border-gray-200">
-                              <div className="space-y-2 mb-4">
-                                <div className="flex justify-between text-sm">
-                                  <span className="text-gray-600">Subtotal:</span>
-                                  <span className="font-medium">${total?.toFixed(2) || '0.00'}</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                  <span className="text-gray-600">IVA (12%):</span>
-                                  <span className="font-medium">${((total || 0) * 0.12).toFixed(2)}</span>
-                                </div>
-                                <div className="flex justify-between pt-2 border-t">
-                                  <span className="font-bold text-gray-800">Total:</span>
-                                  <span className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                                    ${((total || 0) * 1.12).toFixed(2)}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="space-y-2">
-                                <Link
-                                  to="/checkout"
-                                  onClick={() => setIsCartOpen(false)}
-                                  className="block w-full text-center px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-                                >
-                                  Finalizar Compra
-                                </Link>
-                                <Link
-                                  to="/tienda"
-                                  onClick={() => setIsCartOpen(false)}
-                                  className="block w-full text-center px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors"
-                                >
-                                  Continuar Comprando
-                                </Link>
-                              </div>
-                            </div>
-                        </>
-                        ) : (
-                          <div className="text-center py-8">
-                            <ShoppingCartIcon className="h-16 w-16 text-gray-300 mx-auto mb-3" />
-                            <p className="text-gray-500 font-medium mb-4">Tu carrito está vacío</p>
-                            <Link
-                              to="/tienda"
-                              onClick={() => setIsCartOpen(false)}
-                              className="inline-block px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:shadow-lg transition-all"
-                            >
-                              Explorar Tienda
-                            </Link>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Auth buttons */}
-                {session ? (
-                  <Menu as="div" className="relative ml-3">
-                    <div>
-                      <Menu.Button className="relative flex rounded-full bg-blue-100 p-1 text-blue-600 hover:bg-blue-200 focus:outline-none">
-                        <span className="absolute -inset-1.5" />
-                        <span className="sr-only">Abrir menú de usuario</span>
-                        <UserIcon className="h-6 w-6" aria-hidden="true" />
-                      </Menu.Button>
-                    </div>
-                    <Transition
-                      as={Fragment}
-                      enter="transition ease-out duration-100"
-                      enterFrom="transform opacity-0 scale-95"
-                      enterTo="transform opacity-100 scale-100"
-                      leave="transition ease-in duration-75"
-                      leaveFrom="transform opacity-100 scale-100"
-                      leaveTo="transform opacity-0 scale-95"
-                    >
-                      <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                        <Menu.Item>
-                          {({ active }) => (
-                            <Link
-                              to="/dashboard"
-                              className={classNames(
-                                active ? 'bg-blue-50' : '',
-                                'block px-4 py-2 text-sm text-gray-700'
-                              )}
-                            >
-                              Mi Dashboard
-                            </Link>
-                          )}
-                        </Menu.Item>
-                        <Menu.Item>
-                          {({ active }) => (
-                            <button
-                              onClick={async () => {
-                                await authService.signOut();
-                              }}
-                              className={classNames(
-                                active ? 'bg-blue-50' : '',
-                                'block w-full text-left px-4 py-2 text-sm text-gray-700'
-                              )}
-                            >
-                              Cerrar Sesión
-                            </button>
-                          )}
-                        </Menu.Item>
-                      </Menu.Items>
-                  </div>
-                  
-                  {/* Mobile Authentication Buttons */}
-                  {!session && (
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Mi Cuenta</h3>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Link
-                          to="/login"
-                          className="flex items-center justify-center p-2 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                  <a 
-                    href="tel:+593988835269" 
-                    className="inline-flex items-center p-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors duration-200"
-                  >
-                    <FaPhone className="mr-1" /> Llamar
-                  </a>
-                  <a 
-                    href="https://wa.me/593988835269" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="inline-flex items-center p-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-500 hover:bg-green-600 transition-colors duration-200"
-                  >
-                    <FaWhatsapp className="mr-1" /> WhatsApp
-                  </a>
-                  <Link 
-                    to="/contacto" 
-                    className="inline-flex items-center p-1.5 border border-transparent text-xs font-medium rounded-md text-gray-900 bg-yellow-400 hover:bg-yellow-500 transition-colors duration-200"
-                  >
-                    <FaEnvelope className="mr-1" /> Consulta Gratis
-                  </Link>
-                </div>
-              </div>
-            </div>
+              <span className="text-xl font-bold text-gray-900 hidden sm:block">
+                AbogadosEcuador
+              </span>
+            </Link>
           </div>
 
-          {/* Mobile menu */}
-          <Disclosure.Panel className="sm:hidden bg-white border-t border-gray-100 shadow-lg">
-            <div className="space-y-1 px-2 pb-3 pt-2">
-              {allNavigation.map((item) =>
-                item.hasSubmenu ? (
-                  <Disclosure key={item.name} as="div" className="mt-1">
-                    {({ open }) => (
-                      <>
-                        <Disclosure.Button
-                          className={classNames(
-                            item.current ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-50 hover:text-blue-700',
-                            'group w-full flex items-center justify-between rounded-md px-2 py-2 text-left text-sm font-medium text-gray-700 focus:outline-none'
-                          )}
-                        >
-                          <div className="flex items-center">
-                            <span className="mr-2">{item.icon}</span>
-                            <span>{item.name}</span>
-                          </div>
-                          <ChevronDownIcon
-                            className={classNames(
-                              'h-5 w-5 text-gray-400 group-hover:text-blue-500 transition-transform',
-                              open ? 'rotate-180 transform' : ''
-                            )}
-                          />
-                        </Disclosure.Button>
-                        <Disclosure.Panel className="mt-1 space-y-1">
-                          {(item.name === 'Servicios' ? serviceSubmenu : 
-                            item.name === 'Consultas' ? consultasSubmenu : 
-                            item.name === 'Productos' ? productosSubmenu :
-                            item.name === 'Comunidad' ? comunidadSubmenu :
-                            item.name === 'Políticas' ? policySubmenu : []).map((subItem) => (
-                            <Link
-                              key={subItem.name}
-                              to={subItem.href}
-                              className="group flex items-center rounded-md py-2 pl-4 pr-2 text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-700"
-                            >
-                              <span className="mr-2">{subItem.icon}</span>
-                              <span>{subItem.name}</span>
-                            </Link>
-                          ))}
-                        </Disclosure.Panel>
-                      </>
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center space-x-1">
+            {navigation.map((item) => (
+              <div key={item.name} className="relative">
+                {item.dropdown ? (
+                  <div>
+                    <button
+                      onClick={() => toggleDropdown(item.name)}
+                      className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        isActive(item.href) 
+                          ? 'bg-blue-50 text-blue-600' 
+                          : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
+                      }`}
+                    >
+                      <span>{item.name}</span>
+                      <ChevronDown className={`w-4 h-4 transition-transform ${
+                        dropdownOpen[item.name] ? 'rotate-180' : ''
+                      }`} />
+                    </button>
+                    {dropdownOpen[item.name] && (
+                      <div className="absolute top-full left-0 mt-1 w-56 bg-white rounded-lg shadow-xl border border-gray-100 py-2 animate-fadeIn">
+                        {item.dropdown.map((subItem) => (
+                          <Link
+                            key={subItem.name}
+                            to={subItem.href}
+                            onClick={() => setDropdownOpen({})}
+                            className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                          >
+                            {subItem.icon}
+                            <span>{subItem.name}</span>
+                          </Link>
+                        ))}
+                      </div>
                     )}
-                  </Disclosure>
+                  </div>
                 ) : (
                   <Link
-                    key={item.name}
                     to={item.href}
-                    className={classNames(
-                      item.current ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-50 hover:text-blue-700',
-                      'flex items-center rounded-md px-2 py-2 text-sm font-medium text-gray-700'
-                    )}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      isActive(item.href)
+                        ? 'bg-blue-50 text-blue-600'
+                        : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
+                    }`}
                   >
-                    <span className="mr-2">{item.icon}</span>
-                    <span>{item.name}</span>
+                    {item.name}
                   </Link>
-                )
-              )}
-              
-              {/* Mobile Contact Action Buttons */}
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Contacto Directo</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <a 
-                    href="tel:+593988835269" 
-                    className="flex items-center justify-center p-2 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
-                  >
-                    <FaPhone className="mr-1" /> Llamar
-                  </a>
-                  <a 
-                    href="https://wa.me/593988835269" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="flex items-center justify-center p-2 border border-transparent text-xs font-medium rounded-md text-white bg-green-500 hover:bg-green-600"
-                  >
-                    <FaWhatsapp className="mr-1" /> WhatsApp
-                  </a>
-                  <Link 
-                    to="/contacto" 
-                    className="flex items-center justify-center p-2 border border-transparent text-xs font-medium rounded-md text-gray-900 bg-yellow-400 hover:bg-yellow-500 col-span-2 mt-1"
-                  >
-                    <FaEnvelope className="mr-1" /> Consulta Gratis
-                  </Link>
-                </div>
+                )}
               </div>
-              
-              {/* Mobile Authentication Buttons */}
-              {!session && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Mi Cuenta</h3>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Link
-                      to="/login"
-                      className="flex items-center justify-center p-2 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                    >
-                      <FaSignInAlt className="mr-1" /> Iniciar Sesión
-                    </Link>
-                    <Link
-                      to="/registro"
-                      className="flex items-center justify-center p-2 text-xs font-medium rounded-md text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100"
-                    >
-                      <FaUserPlus className="mr-1" /> Registrarse
-                    </Link>
-                  </div>
-                </div>
-              )}
+            ))}
+          </div>
+
+          {/* Right Side Actions */}
+          <div className="flex items-center space-x-3">
+            {/* Contact Buttons */}
+            <div className="hidden md:flex items-center space-x-2">
+              <a
+                href="tel:+593988835269"
+                className="p-2 text-gray-600 hover:text-blue-600 transition-colors"
+              >
+                <Phone className="w-5 h-5" />
+              </a>
+              <a
+                href="https://wa.me/593988835269"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 text-green-600 hover:text-green-700 transition-colors"
+              >
+                <FaWhatsapp className="w-5 h-5" />
+              </a>
             </div>
-          </Disclosure.Panel>
-        </>
+
+            {/* Cart */}
+            <button className="p-2 text-gray-600 hover:text-blue-600 transition-colors relative">
+              <ShoppingCart className="w-5 h-5" />
+              {cartItems.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                  {cartItems.length}
+                </span>
+              )}
+            </button>
+
+            {/* User Menu */}
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="p-2 text-gray-600 hover:text-blue-600 transition-colors"
+                >
+                  <User className="w-5 h-5" />
+                </button>
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-2">
+                    <Link
+                      to={user.role === 'admin' ? '/admin' : '/dashboard'}
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      <span>Dashboard</span>
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors text-left"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Cerrar Sesión</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="hidden md:flex items-center space-x-2">
+                <Link
+                  to="/login"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                >
+                  Iniciar Sesión
+                </Link>
+                <Link
+                  to="/register"
+                  className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Registrarse
+                </Link>
+              </div>
+            )}
+
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="lg:hidden p-2 text-gray-600 hover:text-blue-600 transition-colors"
+            >
+              {isOpen ? <X className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Navigation */}
+      {isOpen && (
+        <div className="lg:hidden bg-white border-t border-gray-100">
+          <div className="px-4 py-4 space-y-2">
+            {navigation.map((item) => (
+              <div key={item.name}>
+                {item.dropdown ? (
+                  <div>
+                    <button
+                      onClick={() => toggleDropdown(item.name)}
+                      className="w-full flex items-center justify-between px-3 py-2 text-left rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <span>{item.name}</span>
+                      <ChevronDown className={`w-4 h-4 transition-transform ${
+                        dropdownOpen[item.name] ? 'rotate-180' : ''
+                      }`} />
+                    </button>
+                    {dropdownOpen[item.name] && (
+                      <div className="ml-4 mt-2 space-y-1">
+                        {item.dropdown.map((subItem) => (
+                          <Link
+                            key={subItem.name}
+                            to={subItem.href}
+                            onClick={() => setIsOpen(false)}
+                            className="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg transition-colors"
+                          >
+                            {subItem.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Link
+                    to={item.href}
+                    onClick={() => setIsOpen(false)}
+                    className="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
+                  >
+                    {item.name}
+                  </Link>
+                )}
+              </div>
+            ))}
+
+            {/* Mobile Auth Buttons */}
+            {!user && (
+              <div className="pt-4 border-t border-gray-100 space-y-2">
+                <Link
+                  to="/login"
+                  onClick={() => setIsOpen(false)}
+                  className="block w-full px-4 py-2 text-center text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  Iniciar Sesión
+                </Link>
+                <Link
+                  to="/register"
+                  onClick={() => setIsOpen(false)}
+                  className="block w-full px-4 py-2 text-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Registrarse
+                </Link>
+              </div>
+            )}
+
+            {/* Mobile Contact */}
+            <div className="pt-4 border-t border-gray-100 flex justify-around">
+              <a
+                href="tel:+593988835269"
+                className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+              >
+                <Phone className="w-4 h-4" />
+                <span>Llamar</span>
+              </a>
+              <a
+                href="https://wa.me/593988835269"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-2 px-4 py-2 text-green-600 hover:text-green-700 transition-colors"
+              >
+                <FaWhatsapp className="w-4 h-4" />
+                <span>WhatsApp</span>
+              </a>
+            </div>
+          </div>
+        </div>
       )}
-    </Disclosure>
+    </nav>
   );
-}
+};
 
 export default Navbar;
