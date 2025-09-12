@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaLock, FaHome, FaSignInAlt, FaUserPlus, FaShield } from 'react-icons/fa';
+import { FaLock, FaHome, FaSignInAlt, FaUserPlus, FaShieldAlt } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 
 const UnauthorizedPage = () => {
@@ -42,7 +42,7 @@ const UnauthorizedPage = () => {
               <FaLock className="text-6xl text-red-500" />
             </div>
             <div className="absolute -top-2 -right-2 w-16 h-16 bg-gradient-to-br from-orange-100 to-orange-200 rounded-full flex items-center justify-center">
-              <FaShield className="text-2xl text-orange-600" />
+              <FaShieldAlt className="text-2xl text-orange-600" />
             </div>
             <div className="absolute -bottom-2 -left-2 w-16 h-16 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-full flex items-center justify-center">
               <span className="text-2xl font-bold text-yellow-600">!</span>

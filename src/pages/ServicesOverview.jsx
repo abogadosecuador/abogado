@@ -10,7 +10,7 @@ import {
   FaBalanceScale,
   FaUserTie,
   FaHandshake,
-  FaShield,
+  FaShieldAlt,
   FaClock,
   FaCheckCircle,
   FaStar
@@ -85,7 +85,7 @@ const ServicesOverview = () => {
     { number: '500+', label: 'Casos Exitosos', icon: <FaCheckCircle /> },
     { number: '10+', label: 'Años Experiencia', icon: <FaClock /> },
     { number: '98%', label: 'Satisfacción', icon: <FaStar /> },
-    { number: '24/7', label: 'Disponibilidad', icon: <FaShield /> }
+    { number: '24/7', label: 'Disponibilidad', icon: <FaShieldAlt /> }
   ];
 
   return (
@@ -266,7 +266,7 @@ const ServicesOverview = () => {
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
-              <FaShield className="text-5xl text-blue-600 mx-auto mb-4" />
+              <FaShieldAlt className="text-5xl text-blue-600 mx-auto mb-4" />
               <h4 className="text-xl font-bold mb-2">Confidencialidad Total</h4>
               <p className="text-gray-600">
                 Garantizamos absoluta privacidad en todos los casos
