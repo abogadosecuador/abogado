@@ -183,10 +183,10 @@ const Navbar = () => {
 
             {/* Cart */}
             <button className="p-2 text-gray-600 hover:text-blue-600 transition-colors relative">
-              <ShoppingCart className="w-5 h-5" />
-              {cartItems.length > 0 && (
+              <ShoppingCartIcon className="w-5 h-5" />
+              {items && items.length > 0 && (
                 <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                  {cartItems.length}
+                  {items.length}
                 </span>
               )}
             </button>
