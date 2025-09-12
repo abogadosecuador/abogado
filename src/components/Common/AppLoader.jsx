@@ -41,7 +41,7 @@ const AppLoader = ({ onLoadComplete }) => {
       <div className="text-center">
         <div className="mb-4">
           <img 
-            src="/logo.svg" 
+            src="/icons/favicon.svg" 
             alt="Abogado Wilson" 
             className="w-24 h-24 mx-auto animate-pulse"
             onError={(e) => e.target.src = 'https://via.placeholder.com/150?text=AW'}

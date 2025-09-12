@@ -90,7 +90,7 @@ const DashboardLayout = () => {
         <div className="flex flex-col w-64 border-r border-gray-200 bg-white">
           <div className="h-0 flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
             <div className="flex items-center flex-shrink-0 px-4">
-              <img className="h-10 w-auto" src="/logo.svg" alt="Logo de Abogado Wilson" />
+              <img className="h-10 w-auto" src="/icons/favicon.svg" alt="Logo de Abogado Wilson" />
               <span className="ml-2 text-xl font-semibold text-blue-900">Panel de Usuario</span>
             </div>
             
@@ -187,7 +187,7 @@ const DashboardLayout = () => {
           </button>
           
           <div className="flex items-center pr-4">
-            <img className="h-8 w-auto" src="/logo.svg" alt="Logo" />
+            <img className="h-8 w-auto" src="/icons/favicon.svg" alt="Logo" />
             <span className="ml-2 text-lg font-semibold text-blue-900">Panel</span>
           </div>
         </div>
@@ -227,7 +227,7 @@ const DashboardLayout = () => {
             
             <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
               <div className="flex-shrink-0 flex items-center px-4">
-                <img className="h-8 w-auto" src="/logo.svg" alt="Logo" />
+                <img className="h-8 w-auto" src="/icons/favicon.svg" alt="Logo" />
                 <span className="ml-2 text-lg font-semibold text-blue-900">Panel de Usuario</span>
               </div>
               

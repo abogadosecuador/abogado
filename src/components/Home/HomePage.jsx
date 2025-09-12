@@ -37,7 +37,7 @@ const HomePage = () => {
       <HelmetWrapper
         title="Abogado Wilson Ipiales - Asesoría Legal Profesional"
         description="Servicios legales profesionales por el Abogado Wilson Alexander Ipiales Guerrón. Especialista en derecho penal, civil, tránsito, comercial y aduanas."
-        image="/assets/images/abogado-wilson-profile.jpg"
+        image="/images/abogado.png"
         url="https://abogado-wilson.anipets12.workers.dev"
       >
         <meta name="keywords" content="abogado, wilson ipiales, asesoría legal, derecho penal, derecho civil, derecho de tránsito, consulta legal, Ecuador" />

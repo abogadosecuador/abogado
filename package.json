@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --emptyOutDir && cp _routes.json dist/",
+    "build": "vite build --emptyOutDir && cp _routes.json dist/ && mkdir -p dist/images dist/icons && cp -r public/images/* dist/images/ 2>/dev/null || true && cp -r public/icons/* dist/icons/ 2>/dev/null || true",
     "preview": "vite preview",
     "start:worker": "wrangler dev --port 3000",
     "deploy:worker": "wrangler deploy",
