@@ -3,7 +3,7 @@
 # Script rápido para push profesional a GitHub
 # Este script intenta varios métodos de autenticación automáticamente
 
-echo "=== Push Profesional para AbogadoWilson-new ==="
+echo "=== Push Profesional para AbogadosEcuador ==="
 
 # Verificar cambios pendientes
 if [[ -n $(git status -s) ]]; then
@@ -22,7 +22,7 @@ fi
 # Si falla, intentar con SSH
 echo "⚠️ Push falló con la configuración actual"
 echo "🔑 Intentando con SSH..."
-git remote set-url origin git@github.com:anipets12/abogadowilson-new.git
+git remote set-url origin git@github.com:abogadosecuador/abogadosecuador.git
 
 if git push origin main; then
   echo "✅ Push completado exitosamente usando SSH"
@@ -31,7 +31,7 @@ fi
 
 # Si SSH también falla, restaurar URL original
 echo "⚠️ Push con SSH también falló"
-git remote set-url origin https://github.com/anipets12/abogadowilson-new.git
+git remote set-url origin https://github.com/abogadosecuador/abogadosecuador.git
 
 echo "❗ No se pudo completar el push automáticamente"
 echo "Para completar el push manualmente, ejecuta: ./push-to-github.sh"
