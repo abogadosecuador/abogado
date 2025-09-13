@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --emptyOutDir && cp _routes.json dist/ && mkdir -p dist/images dist/icons && cp -r public/images/* dist/images/ 2>/dev/null || true && cp -r public/icons/* dist/icons/ 2>/dev/null || true",
+    "build": "vite build --emptyOutDir",
     "preview": "vite preview",
     "start:worker": "wrangler dev --port 3000",
     "deploy:worker": "wrangler deploy",
@@ -87,7 +87,7 @@
     "tailwindcss": "^3.4.0",
     "terser": "5.39.0",
     "typescript": "5.8.3",
-    "vite": "^6.3.2",
+    "vite": "^6.3.6",
     "vitest": "^0.34.6",
     "wrangler": "^4.36.0"
   },
