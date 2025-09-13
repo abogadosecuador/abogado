@@ -3,32 +3,24 @@ main = "_worker.js"
 compatibility_date = "2025-01-01"
 account_id = "70661c46051942965565a5c976219dde"
 workers_dev = true
-legacy_env = true
 
-# Build configuration
 [build]
 command = "npm run build"
 
-# Site configuration
 [assets]
 directory = "./dist"
-binding = "ASSETS"
 
-# KV Namespaces
 [[kv_namespaces]]
 binding = "ABOGADO_WILSON_KV"
-id = "9585583f15824e6891e9660bd6f85d7d"
+id = "0757f29fc8264ce985de8d780283d86e"
 
-# D1 Databases
 [[d1_databases]]
 binding = "ABOGADO_WILSON_DB"
 database_name = "abogadosecuador"
-database_id = "029949b9-4266-4060-8bcd-71525b26600c"
+database_id = "0757f29fc8264ce985de8d780283d86e"
 
-# Environment variables
-# Cron Triggers for scheduled tasks
 [triggers]
-crons = [ "0 5 * * *" ] # Runs every day at 5:00 AM UTC
+crons = [ "0 5 * * *" ]
 
 [vars]
 ENVIRONMENT = "production"
@@ -40,10 +32,5 @@ N8N_WEBHOOK_URL = "https://n8n-latest-hurl.onrender.com"
 WHATSAPP_NUMBER = "+59398835269"
 CONTACT_EMAIL = "Wifirmalegal@gmail.com"
 CLOUDINARY_CLOUD_NAME = "dg3s7tqoj"
-APP_URL = "https://abogadosecuador.workers.dev"
-API_URL = "https://abogadosecuador.workers.dev/api"
-
-# Production environment
-#[env.production]
-#name = "abogadosecuador"
-# Note: routes are for custom domains, not workers.dev. Leaving env-specific bindings commented out.
+APP_URL = "https://abogados.workers.dev"
+API_URL = "https://abogados.workers.dev/api"

@@ -29,7 +29,7 @@
     overflow-x: hidden;
   }
   body {
-    @apply bg-secondary-50 text-secondary-900;
+    @apply bg-neutral-50 text-neutral-900;
     min-height: 100%;
     overflow-x: hidden; /* Evita espacios en blanco a la derecha por desbordes */
     width: 100%;
@@ -37,20 +37,20 @@
 }
 
 @layer components {
-.btn-primary {
-    @apply bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors duration-200;
+  .btn-primary {
+    @apply bg-brand text-white px-4 py-2 rounded-lg hover:bg-brand-dark transition-colors duration-200;
   }
-.btn-secondary {
-    @apply bg-secondary-200 text-secondary-900 px-4 py-2 rounded-lg hover:bg-secondary-300 transition-colors duration-200;
+  .btn-secondary {
+    @apply bg-neutral-200 text-neutral-900 px-4 py-2 rounded-lg hover:bg-neutral-300 transition-colors duration-200;
   }
   .input-field {
-    @apply w-full px-3 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500;
+    @apply w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand;
   }
-.card {
+  .card {
     @apply bg-white p-6 rounded-xl shadow-lg;
   }
   .section-title {
-    @apply text-3xl font-bold text-secondary-900 mb-6;
+    @apply text-3xl font-bold text-neutral-900 mb-6;
   }
   .container-custom {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
