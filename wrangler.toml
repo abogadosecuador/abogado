@@ -26,6 +26,10 @@ database_name = "abogadosecuador"
 database_id = "029949b9-4266-4060-8bcd-71525b26600c"
 
 # Environment variables
+# Cron Triggers for scheduled tasks
+[triggers]
+crons = [ "0 5 * * *" ] # Runs every day at 5:00 AM UTC
+
 [vars]
 ENVIRONMENT = "production"
 CORS_ORIGIN = "*"

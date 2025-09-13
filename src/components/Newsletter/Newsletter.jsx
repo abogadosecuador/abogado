@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaEnvelope, FaPaperPlane, FaBell, FaCheck } from 'react-icons/fa';
+import { toast } from 'react-hot-toast';
 
 const Newsletter = () => {
   const [email, setEmail] = useState('');
@@ -12,17 +13,31 @@ const Newsletter = () => {
     setEmail(e.target.value);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email) return;
-    
+
     setLoading(true);
-    
-    // Simulación de envío a API (en implementación real conectaría con backend)
-    setTimeout(() => {
+
+    try {
+      const res = await fetch('/api/forms/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.error || 'No se pudo completar la suscripción');
+      }
+
       setSubscribed(true);
+      toast.success('¡Gracias por suscribirte!');
+    } catch (err) {
+      toast.error(err.message || 'Ocurrió un error. Intenta nuevamente.');
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   const requestNotificationPermission = async () => {

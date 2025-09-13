@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { FaHome, FaUser, FaBook, FaCoins, FaUsers, FaCreditCard, FaSignOutAlt, FaShieldAlt } from 'react-icons/fa';
+import { FaHome, FaUser, FaBook, FaCoins, FaUsers, FaCreditCard, FaSignOutAlt, FaShieldAlt, FaStar, FaGamepad, FaBrain } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 
 const userNavLinks = [
@@ -10,6 +10,9 @@ const userNavLinks = [
   { name: 'Mis Compras', path: '/dashboard/compras', icon: <FaCreditCard /> },
   { name: 'Mis Tokens', path: '/dashboard/tokens', icon: <FaCoins /> },
   { name: 'Referidos', path: '/dashboard/referidos', icon: <FaUsers /> },
+  { name: 'Suscripción', path: '/dashboard/suscripcion', icon: <FaStar /> },
+  { name: 'Trivia Diaria', path: '/dashboard/trivia', icon: <FaGamepad /> },
+  { name: 'Consulta IA', path: '/dashboard/consulta-ia', icon: <FaBrain /> },
 ];
 
 const Sidebar = () => {

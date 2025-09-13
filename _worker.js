@@ -1,6 +1,10 @@
 import { APIRouter } from './src/api/router.js';
+import { CronHandler } from './src/api/handlers/cronHandler.js';
 
 export default {
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(new CronHandler(env).handle());
+  },
   async fetch(request, env) {
     const url = new URL(request.url);
     const host = url.hostname;

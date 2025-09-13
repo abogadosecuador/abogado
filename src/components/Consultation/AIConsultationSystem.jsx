@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaRobot, FaUser, FaPaperPlane, FaMicrophone, FaStop, FaDownload, FaCopy, FaShare } from 'react-icons/fa';
+import { FaRobot, FaUser, FaPaperPlane, FaMicrophone, FaStop, FaDownload, FaCopy, FaShare, FaCoins } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '../../context/AuthContext';
 
 const AIConsultationSystem = () => {
+  const CONSULTATION_TOKEN_COST = 10;
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -10,6 +12,22 @@ const AIConsultationSystem = () => {
   const [consultationHistory, setConsultationHistory] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('general');
   const messagesEndRef = useRef(null);
+  const { user, updateUserProfile } = useAuth(); // Assuming updateUserProfile exists in AuthContext
+  const [userProfile, setUserProfile] = useState({ tokens: 0, used_free_consultation: true });
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!user) return;
+      // Fetch real profile data
+      const token = localStorage.getItem('authToken');
+      const res = await fetch('/api/auth/profile', { headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) {
+        const { data } = await res.json();
+        setUserProfile(data);
+      }
+    };
+    fetchUserProfile();
+  }, [user]);
 
   const categories = [
     { id: 'general', name: 'Consulta General', icon: '⚖️' },
@@ -49,53 +67,42 @@ const AIConsultationSystem = () => {
     }
   ];
 
-  // Función para enviar mensaje a la API de Gemini
-  const sendMessageToAI = async (message, category) => {
-    const API_KEY = 'AIzaSyCAkIkgslyxArR_kg1kVRREzrjeGWavyyU';
-    const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
-
-    const prompt = `Eres un abogado experto en derecho ecuatoriano, especializado en ${category}. 
-    Responde de manera profesional, clara y útil a la siguiente consulta legal. 
-    Incluye referencias a leyes ecuatorianas cuando sea relevante.
-    
-    Consulta: ${message}
-    
-    Por favor proporciona:
-    1. Análisis legal de la situación
-    2. Opciones disponibles
-    3. Pasos a seguir
-    4. Referencias legales relevantes
-    5. Recomendaciones prácticas`;
-
+  const sendMessageToAI = async (message) => {
+    const token = localStorage.getItem('authToken');
     try {
-      const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+      const response = await fetch('/api/ai/consultation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: prompt
-            }]
-          }]
-        })
+        body: JSON.stringify({ query: message }),
       });
 
+      const data = await response.json();
       if (!response.ok) {
-        throw new Error('Error en la respuesta de la API');
+        throw new Error(data.error);
       }
 
-      const data = await response.json();
-      
-      if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-        return data.candidates[0].content.parts[0].text;
-      } else {
-        throw new Error('Respuesta inesperada de la API');
+      // Update user profile with new token balance if applicable
+      // Update user profile state after consultation
+      const updatedProfile = {};
+      if (data.data.newTokenBalance !== undefined) {
+        updatedProfile.tokens = data.data.newTokenBalance;
       }
+      if (!userProfile.used_free_consultation) {
+        updatedProfile.used_free_consultation = true;
+      }
+      setUserProfile(prev => ({ ...prev, ...updatedProfile }));
+      // Optionally update the global user state if AuthContext supports it
+      if (updateUserProfile) {
+        updateUserProfile(updatedProfile);
+      }
+
+      return data.data.content;
     } catch (error) {
       console.error('Error al comunicarse con la IA:', error);
-      return 'Lo siento, no pude procesar tu consulta en este momento. Por favor, intenta de nuevo o contacta directamente con un abogado.';
+      return `Lo siento, ocurrió un error: ${error.message}`;
     }
   };
 
@@ -115,7 +122,7 @@ const AIConsultationSystem = () => {
     setIsLoading(true);
 
     try {
-      const aiResponse = await sendMessageToAI(inputMessage, selectedCategory);
+      const aiResponse = await sendMessageToAI(inputMessage);
       
       const aiMessage = {
         id: Date.now() + 1,
@@ -392,43 +399,62 @@ const AIConsultationSystem = () => {
             {/* Input */}
             <div className="p-6 border-t border-gray-200">
               <div className="flex space-x-3">
-                <div className="flex-1">
-                  <textarea
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Escribe tu consulta legal aquí..."
-                    className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    rows="3"
-                    disabled={isLoading}
-                  />
+                  {(() => {
+                    const isFree = !userProfile.used_free_consultation;
+                    const canAfford = userProfile.tokens >= CONSULTATION_TOKEN_COST;
+                    const canConsult = isFree || canAfford;
+
+                    return (
+                      <>
+                        <div className="flex-1">
+                          <textarea
+                            value={inputMessage}
+                            onChange={(e) => setInputMessage(e.target.value)}
+                            onKeyPress={handleKeyPress}
+                            placeholder="Escribe tu consulta legal aquí..."
+                            className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            rows="3"
+                            disabled={isLoading || !canConsult}
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            {isFree ? (
+                              <span className="font-bold text-success">Tu primera consulta es GRATIS.</span>
+                            ) : (
+                              <span className={`font-bold ${canAfford ? 'text-neutral-600' : 'text-danger'}`}>
+                                Costo: {CONSULTATION_TOKEN_COST} tokens. (Tienes {userProfile.tokens})
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                        <div className="flex flex-col space-y-2">
+                          <button
+                            onClick={isRecording ? stopRecording : startRecording}
+                            className={`p-3 rounded-lg ${
+                              isRecording 
+                                ? 'bg-red-600 text-white hover:bg-red-700' 
+                                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                            }`}
+                            title={isRecording ? 'Detener grabación' : 'Grabar voz'}
+                          >
+                            {isRecording ? <FaStop /> : <FaMicrophone />}
+                          </button>
+                          <button
+                            onClick={handleSendMessage}
+                            disabled={!inputMessage.trim() || isLoading || !canConsult}
+                            className={`p-3 rounded-lg ${
+                              !inputMessage.trim() || isLoading || !canConsult
+                                ? 'bg-gray-300 cursor-not-allowed'
+                                : 'bg-brand text-white hover:bg-brand-dark'
+                            }`}
+                            title="Enviar mensaje"
+                          >
+                            <FaPaperPlane />
+                          </button>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
-                <div className="flex flex-col space-y-2">
-                  <button
-                    onClick={isRecording ? stopRecording : startRecording}
-                    className={`p-3 rounded-lg ${
-                      isRecording 
-                        ? 'bg-red-600 text-white hover:bg-red-700' 
-                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                    }`}
-                    title={isRecording ? 'Detener grabación' : 'Grabar voz'}
-                  >
-                    {isRecording ? <FaStop /> : <FaMicrophone />}
-                  </button>
-                  <button
-                    onClick={handleSendMessage}
-                    disabled={!inputMessage.trim() || isLoading}
-                    className={`p-3 rounded-lg ${
-                      !inputMessage.trim() || isLoading
-                        ? 'bg-gray-300 cursor-not-allowed'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
-                    }`}
-                    title="Enviar mensaje"
-                  >
-                    <FaPaperPlane />
-                  </button>
-                </div>
-              </div>
               <p className="text-xs text-gray-500 mt-2">
                 Presiona Enter para enviar, Shift+Enter para nueva línea
               </p>

@@ -3,7 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   FaChartLine, FaUsers, FaShoppingCart, FaBook, FaPalette, FaGift, 
-  FaGamepad, FaNewspaper, FaCalendarAlt, FaChartPie, FaCog, FaSignOutAlt 
+  FaGamepad, FaNewspaper, FaCalendarAlt, FaChartPie, FaCog, FaSignOutAlt, FaWpforms 
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 
@@ -13,6 +13,7 @@ const menuItems = [
   { id: 'products', label: 'Productos', icon: FaShoppingCart, path: '/admin/products' },
   { id: 'courses', label: 'Cursos', icon: FaBook, path: '/admin/courses' },
   { id: 'blog', label: 'Blog', icon: FaNewspaper, path: '/admin/blog' },
+  { id: 'forms', label: 'Formularios', icon: FaWpforms, path: '/admin/formularios' },
   { id: 'appointments', label: 'Citas', icon: FaCalendarAlt, path: '/admin/appointments' },
   { id: 'promotions', label: 'Promociones', icon: FaGift, path: '/admin/promotions' },
   { id: 'editor', label: 'Editor de Páginas', icon: FaPalette, path: '/admin/editor' },

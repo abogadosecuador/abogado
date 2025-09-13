@@ -71,12 +71,17 @@ import DashboardOverview from './components/Dashboard/DashboardOverview';
 import PurchaseHistory from './components/Dashboard/PurchaseHistory';
 import UserProfile from './components/Dashboard/UserProfile';
 import UserCourses from './components/Dashboard/UserCourses';
+import SubscriptionManagement from './components/Dashboard/SubscriptionManagement';
+import TriviaGame from './components/Dashboard/TriviaGame';
+import CoursePlayer from './components/Dashboard/CoursePlayer';
 
 // Páginas de administrador (Nueva estructura)
 import AdminLayout from './components/Admin/AdminLayout';
 import AdminOverview from './components/Admin/AdminOverview';
 import UserManagement from './components/Admin/UserManagement';
 import BlogManagement from './components/Admin/BlogManagement';
+import CourseManagement from './components/Admin/CourseManagement';
+import FormSubmissions from './components/Admin/FormSubmissions';
 import DataExporter from './components/Admin/DataExporter'; // Mantener por si se usa en otro lado
 import WhatsAppManager from './components/Admin/WhatsAppManager'; // Mantener por si se usa en otro lado
 
@@ -210,6 +215,10 @@ function App() {
                     <Route path="perfil" element={<UserProfile />} />
                     <Route path="compras" element={<PurchaseHistory />} />
                     <Route path="mis-cursos" element={<UserCourses />} />
+                    <Route path="suscripcion" element={<SubscriptionManagement />} />
+                    <Route path="mis-cursos/:courseId" element={<CoursePlayer />} />
+                    <Route path="trivia" element={<TriviaGame />} />
+                    <Route path="consulta-ia" element={<AIConsultationSystem />} />
                     {/* Próximamente: Añadir aquí más rutas para tokens, referidos, etc. */}
                   </Route>
                   
@@ -226,14 +235,15 @@ function App() {
                     <Route path="users" element={<UserManagement />} />
                     <Route path="products" element={<ProductManagement />} />
                     <Route path="blog" element={<BlogManagement />} />
+                    <Route path="courses" element={<CourseManagement />} />
+                    <Route path="formularios" element={<FormSubmissions />} />
                     {/* Próximamente: Añadir aquí más rutas para productos, cursos, etc. */}
                     {/* <Route path="products" element={<ProductManagement />} /> */}
                     {/* <Route path="courses" element={<CourseManagement />} /> */}
                   </Route>
                   
                   {/* Rutas de funcionalidad */}
-                  <Route path="/consulta-ia" element={<AIConsultationSystem />} />
-                  <Route path="/agendar-cita" element={<AppointmentScheduler />} />
+                                    <Route path="/agendar-cita" element={<AppointmentScheduler />} />
                   <Route path="/afiliados/registro" element={<AffiliateRegister />} />
                   <Route path="/afiliados/dashboard" element={
                     <ProtectedRoute requiredRole="affiliate">

@@ -11,6 +11,12 @@ import { ServiceHandler } from './handlers/services.js';
 import { HealthHandler } from './handlers/health.js';
 import { FormsHandler } from './handlers/forms.js';
 import { AdminHandler } from './handlers/admin.js';
+import { AiDocumentHandler } from './handlers/aiDocumentHandler.js';
+import { SubscriptionHandler } from './handlers/subscriptionHandler.js';
+import { GamificationHandler } from './handlers/gamificationHandler.js';
+import { CourseContentHandler } from './handlers/courseContentHandler.js';
+import { UserContentHandler } from './handlers/userContentHandler.js';
+import { AiConsultationHandler } from './handlers/aiConsultationHandler.js';
 import { BankTransferHandler } from './handlers/bankTransferHandler.js';
 import { corsHeaders } from './headers.js';
 import { createSupabaseClient } from '../lib/supabase.js';
@@ -33,6 +39,12 @@ export class APIRouter {
     this.healthHandler = new HealthHandler(env, this.supabase);
     this.formsHandler = new FormsHandler(env, this.supabase);
     this.adminHandler = new AdminHandler(env, this.supabase);
+    this.aiDocumentHandler = new AiDocumentHandler(env, this.supabase);
+    this.subscriptionHandler = new SubscriptionHandler(env, this.supabase);
+    this.gamificationHandler = new GamificationHandler(env, this.supabase);
+    this.courseContentHandler = new CourseContentHandler(env, this.supabase);
+    this.userContentHandler = new UserContentHandler(env, this.supabase);
+    this.aiConsultationHandler = new AiConsultationHandler(env, this.supabase);
     this.bankTransferHandler = new BankTransferHandler(env, this.supabase);
   }
 
@@ -72,6 +84,13 @@ export class APIRouter {
         case 'products':
           return await this.serviceHandler.handleProducts(request, method, id);
         
+        case 'courses':
+          // This route is for public/user access to course content
+          return await this.courseContentHandler.handle(request, method, id, action);
+        
+        case 'user':
+          return await this.userContentHandler.handle(request, method, id);
+        
         case 'cart':
           return await this.cartHandler.handle(request, method, action || id);
         
@@ -108,6 +127,21 @@ export class APIRouter {
         
         case 'documents':
           return await this.documentHandler.handle(request, method, id);
+
+        case 'ai':
+          if (id === 'documents' && action === 'generate' && method === 'POST') {
+            return await this.aiDocumentHandler.handle(request);
+          }
+          if (id === 'consultation' && method === 'POST') {
+            return await this.aiConsultationHandler.handle(request);
+          }
+          return this.notFound();
+
+        case 'subscriptions':
+            return await this.subscriptionHandler.handle(request, method, id);
+
+        case 'gamification':
+            return await this.gamificationHandler.handle(request, method, id);
         
         case 'notifications':
           return await this.handleNotifications(request, method, id);

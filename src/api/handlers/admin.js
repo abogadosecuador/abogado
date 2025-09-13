@@ -7,7 +7,34 @@ export class AdminHandler {
   }
 
   async handle(request, method, resource) {
-    // 1. Authenticate the user from the token
+    // 1. Authenticate and authorize admin
+    const user = await this.authorizeAdmin(request);
+    if (user instanceof Response) return user; // Return error response if auth fails
+
+    // 2. Route to the correct resource handler
+    switch (resource) {
+      case 'users':
+        if (method === 'GET') return this.getUsers();
+        break;
+      case 'products':
+        return this.handleCrud(request, method, 'products');
+      case 'blog':
+        return this.handleCrud(request, method, 'blog_posts');
+      case 'courses':
+        return this.handleCrud(request, method, 'courses');
+      case 'contact-submissions':
+        if (method === 'GET') return this.getContactSubmissions();
+        break;
+      case 'newsletter-subscribers':
+        if (method === 'GET') return this.getNewsletterSubscribers();
+        break;
+      default:
+        return this.notFound();
+    }
+    return this.methodNotAllowed();
+  }
+
+  async authorizeAdmin(request) {
     const authHeader = request.headers.get('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return this.error('No authorization token provided', 401);
@@ -19,8 +46,6 @@ export class AdminHandler {
       return this.error('Invalid token', 401);
     }
 
-    // 2. Check if the user has the 'admin' role
-    // Note: Supabase JWT doesn't include roles by default. We query the 'profiles' table.
     const { data: profile, error: profileError } = await this.supabase
       .from('profiles')
       .select('role')
@@ -30,147 +55,65 @@ export class AdminHandler {
     if (profileError || profile.role !== 'admin') {
       return this.error('Access denied: Admins only', 403);
     }
+    return user;
+  }
 
-    // 3. Route to the correct resource handler
-    switch (resource) {
-      case 'users':
-        if (method === 'GET') {
-          return this.getUsers();
-        }
-        break;
-
-      case 'products':
-        switch (method) {
-          case 'GET':
-            return this.getProducts();
-          case 'POST':
-            return this.createProduct(request);
-          case 'PUT':
-            return this.updateProduct(request);
-          case 'DELETE':
-            return this.deleteProduct(request);
-          default:
-            return this.methodNotAllowed();
-        }
-        break;
-
-      case 'blog':
-        switch (method) {
-          case 'GET':
-            return this.getBlogPosts();
-          case 'POST':
-            return this.createBlogPost(request);
-          case 'PUT':
-            return this.updateBlogPost(request);
-          case 'DELETE':
-            return this.deleteBlogPost(request);
-          default:
-            return this.methodNotAllowed();
-        }
-        break;
-      // Add other admin resources here (e.g., 'products', 'courses')
+  async handleCrud(request, method, tableName) {
+    switch (method) {
+      case 'GET':
+        return this.getAll(tableName);
+      case 'POST':
+        return this.create(request, tableName);
+      case 'PUT':
+        return this.update(request, tableName);
+      case 'DELETE':
+        return this.delete(request, tableName);
       default:
-        return this.notFound();
+        return this.methodNotAllowed();
     }
-    
-    return this.methodNotAllowed();
+  }
+
+  async getAll(tableName) {
+    const { data, error } = await this.supabase.from(tableName).select('*').order('created_at', { ascending: false });
+    if (error) return this.error(error.message);
+    return this.success(data);
+  }
+
+  async create(request, tableName) {
+    const props = await request.json();
+    const { data, error } = await this.supabase.from(tableName).insert(props).select().single();
+    if (error) return this.error(error.message);
+    return this.success(data, 201);
+  }
+
+  async update(request, tableName) {
+    const { id, ...props } = await request.json();
+    if (!id) return this.error('ID is required for updates', 400);
+    const { data, error } = await this.supabase.from(tableName).update(props).eq('id', id).select().single();
+    if (error) return this.error(error.message);
+    return this.success(data);
+  }
+
+  async delete(request, tableName) {
+    const { id } = await request.json();
+    if (!id) return this.error('ID is required for deletion', 400);
+    const { error } = await this.supabase.from(tableName).delete().eq('id', id);
+    if (error) return this.error(error.message);
+    return this.success({ message: `${tableName} item deleted successfully` });
   }
 
   async getUsers() {
-    // Use the service role key to bypass RLS and get all users
-    // This requires creating a separate Supabase client with the service key
-    // For now, we use the admin's privilege which should have access via RLS.
-    const { data: users, error } = await this.supabase.auth.admin.listUsers();
-
-    if (error) {
-      return this.error(error.message, 500);
-    }
-
-    return this.success(users.users);
+    const { data: { users }, error } = await this.supabase.auth.admin.listUsers();
+    if (error) return this.error(error.message, 500);
+    return this.success(users);
   }
 
-  // Product Management Methods
-  async getProducts() {
-    const { data, error } = await this.supabase.from('products').select('*').order('created_at', { ascending: false });
-    if (error) {
-      return this.error(error.message);
-    }
-    return this.success(data);
+  async getContactSubmissions() {
+    return this.getAll('contact_submissions');
   }
 
-  async createProduct(request) {
-    const productData = await request.json();
-    const { data, error } = await this.supabase.from('products').insert(productData).select().single();
-    if (error) {
-      return this.error(error.message);
-    }
-    return this.success(data, 201);
-  }
-
-  async updateProduct(request) {
-    const { id, ...updateData } = await request.json();
-    if (!id) {
-      return this.error('Product ID is required for updates', 400);
-    }
-    const { data, error } = await this.supabase.from('products').update(updateData).eq('id', id).select().single();
-    if (error) {
-      return this.error(error.message);
-    }
-    return this.success(data);
-  }
-
-  async deleteProduct(request) {
-    const { id } = await request.json();
-    if (!id) {
-      return this.error('Product ID is required for deletion', 400);
-    }
-    const { error } = await this.supabase.from('products').delete().eq('id', id);
-    if (error) {
-      return this.error(error.message);
-    }
-    return this.success({ message: 'Product deleted successfully' });
-  }
-
-  // Blog Management Methods
-  async getBlogPosts() {
-    const { data, error } = await this.supabase.from('blog_posts').select('*').order('created_at', { ascending: false });
-    if (error) {
-      return this.error(error.message);
-    }
-    return this.success(data);
-  }
-
-  async createBlogPost(request) {
-    const postData = await request.json();
-    const { data, error } = await this.supabase.from('blog_posts').insert(postData).select().single();
-    if (error) {
-      return this.error(error.message);
-    }
-    return this.success(data, 201);
-  }
-
-  async updateBlogPost(request) {
-    const { id, ...updateData } = await request.json();
-    if (!id) {
-      return this.error('Post ID is required for updates', 400);
-    }
-    const { data, error } = await this.supabase.from('blog_posts').update(updateData).eq('id', id).select().single();
-    if (error) {
-      return this.error(error.message);
-    }
-    return this.success(data);
-  }
-
-  async deleteBlogPost(request) {
-    const { id } = await request.json();
-    if (!id) {
-      return this.error('Post ID is required for deletion', 400);
-    }
-    const { error } = await this.supabase.from('blog_posts').delete().eq('id', id);
-    if (error) {
-      return this.error(error.message);
-    }
-    return this.success({ message: 'Blog post deleted successfully' });
+  async getNewsletterSubscribers() {
+    return this.getAll('newsletter_subscribers');
   }
 
   // Response helpers
@@ -186,6 +129,10 @@ export class AdminHandler {
       status,
       headers: { 'Content-Type': 'application/json', ...corsHeaders }
     });
+  }
+  
+  unauthorized() {
+    return this.error('Unauthorized', 401);
   }
 
   notFound() {
