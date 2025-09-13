@@ -6,27 +6,12 @@
  * Versión mejorada con soporte para autenticación social (Google, Facebook).
  */
 import { createClient } from '@supabase/supabase-js';
-import { globalConfig } from '../config/globalConfig';
+import { config } from '../config';
 
-// Importar configuración centralizada
-import { supabaseConfig, getBaseUrl, isProduction } from '../config/appConfig';
-
-// Variable para almacenar la única instancia del cliente
-// Usar una variable global para asegurar una única instancia en toda la aplicación
 let supabaseClientInstance = null;
 
-// Flag para evitar múltiples intentos de inicialización simultáneos
-let isInitializing = false;
-
-// Contador para rastrear llamadas de inicialización
-let initCallCount = 0;
-
-// Usar la configuración centralizada
-const envConfig = import.meta.env;
-
-// Configuración de Supabase con valores por defecto
-const supabaseUrl = envConfig.VITE_SUPABASE_URL || globalConfig.supabaseUrl || 'https://kbybhgxqdefuquybstqk.supabase.co';
-const supabaseKey = envConfig.VITE_SUPABASE_ANON_KEY || globalConfig.supabaseKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWJoZ3hxZGVmdXF1eWJzdHFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NjAwODMsImV4cCI6MjA3MzEzNjA4M30.s1knFM9QXd8CH8TC0IOtBBBvb-qm2XYl_VlhVb-CqcE';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || config.supabase.url;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || config.supabase.anonKey;
 
 // Determinar si estamos en un entorno con problemas CORS (Cloudflare Workers)
 const shouldUseProxyWorker = () => {

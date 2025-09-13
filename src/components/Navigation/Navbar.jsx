@@ -20,7 +20,17 @@ import {
   Briefcase,
   Gavel,
   Home,
-  MessageSquare
+  MessageSquare,
+  Newspaper,
+  Handshake,
+  Star,
+  Info,
+  CreditCard,
+  BrainCircuit,
+  Calendar,
+  Car,
+  Anchor,
+  Scale
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useCartStore } from '../../stores/cartStore';
