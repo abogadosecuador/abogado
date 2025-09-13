@@ -204,8 +204,7 @@ export const getSupabaseClient = () => {
   }
   
   // Generar un identificador único para esta instancia
-  const instanceId = envConfig.VITE_SUPABASE_CLIENT_INSTANCE_ID || 
-                    Date.now().toString(36) + Math.random().toString(36).substring(2);
+  const instanceId = Date.now().toString(36) + Math.random().toString(36).substring(2);
   
   // Si ya hay un proceso de inicialización en curso, devolver cliente temporal para evitar bloqueo
   if (isInitializing) {
@@ -227,8 +226,7 @@ export const getSupabaseClient = () => {
     
     // Utilizar clave de almacenamiento única para esta instancia
     // Esto evita conflictos con múltiples instancias de GoTrueClient
-    options.auth.storageKey = envConfig.VITE_AUTH_STORAGE_KEY || 
-                             `sb-auth-token-${instanceId}`;
+    options.auth.storageKey = `sb-auth-token-${instanceId}`;
     
     console.log(`Inicializando Supabase client único [ID: ${instanceId.substring(0,8)}]`);
     

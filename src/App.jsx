@@ -63,6 +63,7 @@ const UserManagement = lazy(() => import('./components/Admin/UserManagement'));
 const BlogManagement = lazy(() => import('./components/Admin/BlogManagement'));
 const CourseManagement = lazy(() => import('./components/Admin/CourseManagement'));
 const ProductManagement = lazy(() => import('./components/Admin/ProductManagement'));
+const PageEditor = lazy(() => import('./components/Admin/PageEditor'));
 
 const CheckoutSystem = lazy(() => import('./components/Checkout/CheckoutSystem'));
 const ThankYouPage = lazy(() => import('./components/Payment/ThankYouPage'));
@@ -134,6 +135,7 @@ const App = () => (
                                         <Route path="blog" element={<BlogManagement />} />
                                         <Route path="courses" element={<CourseManagement />} />
                                         <Route path="products" element={<ProductManagement />} />
+                                        <Route path="page-editor" element={<PageEditor />} />
                                     </Route>
 
                                     {/* Payment Routes */}

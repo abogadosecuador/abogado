@@ -36,6 +36,19 @@ import { useAuthStore } from '../../stores/authStore';
 import { useCartStore } from '../../stores/cartStore';
 import { FaWhatsapp, FaSignInAlt, FaUserPlus as FaUserPlusIcon } from 'react-icons/fa';
 
+const NavLink = ({ to, children, className, ...props }) => {
+    const location = useLocation();
+    const isActive = location.pathname === to;
+    const activeClass = 'bg-brand/10 text-brand';
+    const inactiveClass = 'text-neutral-700 hover:bg-neutral-50 hover:text-brand';
+
+    return (
+        <Link to={to} className={`${className} ${isActive ? activeClass : inactiveClass}`} {...props}>
+            {children}
+        </Link>
+    );
+};
+
 const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();

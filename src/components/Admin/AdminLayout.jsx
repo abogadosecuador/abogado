@@ -19,6 +19,7 @@ const menuItems = [
   { id: 'editor', label: 'Editor de Páginas', icon: FaPalette, path: '/admin/editor' },
   { id: 'analytics', label: 'Analíticas', icon: FaChartPie, path: '/admin/analytics' },
   { id: 'settings', label: 'Configuración', icon: FaCog, path: '/admin/settings' },
+  { id: 'page-editor', label: 'Editor de Páginas', icon: FaPalette, path: '/admin/page-editor' },
 ];
 
 const AdminLayout = () => {
