@@ -17,7 +17,7 @@ id = "0757f29fc8264ce985de8d780283d86e"
 [[d1_databases]]
 binding = "ABOGADO_WILSON_DB"
 database_name = "abogadosecuador"
-database_id = "0757f29fc8264ce985de8d780283d86e"
+database_id = "c4e5e40d-ade6-4486-ac85-4a0b9a1d7b4f"
 
 [triggers]
 crons = [ "0 5 * * *" ]
