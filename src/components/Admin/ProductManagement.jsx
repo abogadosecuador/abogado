@@ -2,44 +2,50 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaSearch, FaPlus, FaEdit, FaTrash, FaTimes, FaImage } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
+import { supabase } from '../../lib/supabaseClient';
 
 const api = {
-  getAuthToken: () => localStorage.getItem('authToken'),
-
   getProducts: async () => {
-    const res = await fetch('/api/admin/products', { headers: { 'Authorization': `Bearer ${api.getAuthToken()}` } });
-    if (!res.ok) throw new Error((await res.json()).error);
-    return (await res.json()).data;
+    const { data, error } = await supabase
+      .from('products')
+      .select('*');
+    
+    if (error) throw error;
+    return data || [];
   },
 
   createProduct: async (productData) => {
-    const res = await fetch('/api/admin/products', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${api.getAuthToken()}` },
-      body: JSON.stringify(productData),
-    });
-    if (!res.ok) throw new Error((await res.json()).error);
-    return (await res.json()).data;
+    const { data, error } = await supabase
+      .from('products')
+      .insert([productData])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
   },
 
   updateProduct: async (productData) => {
-    const res = await fetch('/api/admin/products', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${api.getAuthToken()}` },
-      body: JSON.stringify(productData),
-    });
-    if (!res.ok) throw new Error((await res.json()).error);
-    return (await res.json()).data;
+    const { id, ...updates } = productData;
+    const { data, error } = await supabase
+      .from('products')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
   },
 
   deleteProduct: async (productId) => {
-    const res = await fetch('/api/admin/products', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${api.getAuthToken()}` },
-      body: JSON.stringify({ id: productId }),
-    });
-    if (!res.ok) throw new Error((await res.json()).error);
-    return (await res.json()).data;
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', productId);
+    
+    if (error) throw error;
+    return true;
   },
 };
 

@@ -158,18 +158,23 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateUser,
-    // API esperado por roleMiddleware
-    isAuthenticated: () => !!user,
+    isAuthenticated: () => !!user, // Asegúrate de que esto se llame como una función en los componentes de ruta
     hasRole: (role) => {
       if (!user || !role) return false;
-      if (user.role === role) return true;
-      if (Array.isArray(user.roles)) return user.roles.includes(role);
-      return false;
+      const userRoles = user.roles || (user.role ? [user.role] : []);
+      return userRoles.includes(role);
     },
     hasPermission: (permission) => {
-      if (!user || !permission) return false;
-      if (Array.isArray(user.permissions)) return user.permissions.includes(permission);
-      return false;
+      if (!user || !permission || !Array.isArray(user.permissions)) return false;
+      return user.permissions.includes(permission);
+    },
+    checkStatus: async () => {
+        try {
+            const res = await fetch('/api/status');
+            return res.ok;
+        } catch {
+            return false;
+        }
     }
   };
 

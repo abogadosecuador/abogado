@@ -11,7 +11,6 @@ const Contact = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const location = useLocation();
 
   const handleChange = (e) => {
     setFormData({

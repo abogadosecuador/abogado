@@ -154,6 +154,18 @@ export const authService = {
     }
   },
   
+  // Verificar la conexión con la API
+  async checkConnection() {
+    try {
+      // Realizar una solicitud ligera para verificar la conectividad
+      return await api.get('/status');
+    } catch (error) {
+      console.warn('API connection check failed:', error);
+      // Devolver el error manejado para que el componente pueda reaccionar
+      return handleNetworkError(error);
+    }
+  },
+
   // Iniciar sesión
   async login(email, password) {
     try {

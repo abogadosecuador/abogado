@@ -4,6 +4,10 @@ import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [react()],
+  define: {
+    'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(process.env.VITE_SUPABASE_URL || 'https://kbybhgxqdefuquybstqk.supabase.co'),
+    'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(process.env.VITE_SUPABASE_ANON_KEY || ''),
+  },
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
@@ -21,6 +25,12 @@ export default defineConfig({
     port: 5173,
     host: true,
     open: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
     watch: {
       ignored: [
         '**/admin/**',

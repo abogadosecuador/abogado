@@ -1,316 +1,159 @@
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { ModuleProvider } from './context/ModuleContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { Toaster } from 'react-hot-toast';
-import HelmetWrapper from './components/HelmetWrapper';
-
-// Middleware de autenticación
-import { 
-  ProtectedRoute, 
-  AdminRoute, 
-  ClientRoute, 
-  VisitorOnlyRoute 
-} from './middleware/roleMiddleware.jsx';
-
-// Componentes de navegación
+import { ProtectedRoute, AdminRoute, ClientRoute, VisitorOnlyRoute } from './middleware/roleMiddleware.jsx';
 import Navbar from './components/Navigation/Navbar';
 import Footer from './components/Footer/Footer';
 import LoadingSpinner from './components/Common/LoadingSpinner';
-
-// Páginas públicas (visitantes)
-import HomePage from './components/Home/HomePage';
-import Contact from './components/Contact/Contact';
-import Blog from './components/Blog/Blog';
-import BlogArticle from './components/Blog/BlogArticle';
-import ServicesOverview from './pages/ServicesOverview';
-import ServicioPenalPage from './pages/ServicioPenalPage';
-import ServicioCivilPage from './pages/ServicioCivilPage';
-import ServicioComercialPage from './pages/ServicioComercialPage';
-import ServicioTransitoPage from './pages/ServicioTransitoPage';
-import ServicioAduaneroPage from './pages/ServicioAduaneroPage';
-import ServicioConstitucionalPage from './pages/ServicioConstitucionalPage.jsx';
-import ServicioLaboralPage from './pages/ServicioLaboralPage.jsx';
-import ConsultasCivilesPage from './pages/ConsultasCivilesPage';
-import ConsultasPenalesPage from './pages/ConsultasPenalesPage';
-import ConsultasPage from './pages/ConsultasPage.jsx';
-import ConsultaGeneral from './pages/ConsultaGeneral';
-import TestimoniosPage from './pages/TestimoniosPage';
-import AfiliadosPage from './pages/AfiliadosPage';
-import ReferidosPage from './pages/ReferidosPage';
-import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
-import TermsConditionsPage from './pages/TermsConditionsPage';
-import ForumPage from './pages/ForumPage';
-import BlogPage from './pages/BlogPage';
-import NewsletterPage from './pages/NewsletterPage';
-import NewsPage from './pages/NewsPage.jsx';
-import NewsArticle from './pages/NewsArticle.jsx';
-import UserDashboard from './pages/UserDashboard';
-import CalendarPage from './pages/CalendarPage';
-import ProductsPage from './pages/ProductsPage';
-import AboutPage from './components/About/AboutPage';
-import PrivacyPolicy from './components/PrivacyPolicy';
-import TerminosCondiciones from './components/TerminosCondiciones';
-import Seguridad from './components/Seguridad';
-import Ebooks from './components/Ebooks/EbookStore';
-import CourseCatalog from './components/Courses/CourseSystem';
-import SubscriptionPlans from './components/Subscriptions/SubscriptionPlans';
-import CourseDetail from './pages/CourseDetailPage';
-
-// Páginas de autenticación
-import Login from './components/Auth/Login';
-import Register from './components/Auth/Register';
-import ForgotPassword from './components/Auth/ForgotPassword';
-import AuthCallback from './components/Auth/AuthCallback';
-
-// Páginas de cliente (Nueva estructura)
-import DashboardLayout from './components/Dashboard/DashboardLayout';
-import DashboardOverview from './components/Dashboard/DashboardOverview';
-import PurchaseHistory from './components/Dashboard/PurchaseHistory';
-import UserProfile from './components/Dashboard/UserProfile';
-import UserCourses from './components/Dashboard/UserCourses';
-import SubscriptionManagement from './components/Dashboard/SubscriptionManagement';
-import TriviaGame from './components/Dashboard/TriviaGame';
-import CoursePlayer from './components/Dashboard/CoursePlayer';
-
-// Páginas de administrador (Nueva estructura)
-import AdminLayout from './components/Admin/AdminLayout';
-import AdminOverview from './components/Admin/AdminOverview';
-import UserManagement from './components/Admin/UserManagement';
-import BlogManagement from './components/Admin/BlogManagement';
-import CourseManagement from './components/Admin/CourseManagement';
-import FormSubmissions from './components/Admin/FormSubmissions';
-import DataExporter from './components/Admin/DataExporter'; // Mantener por si se usa en otro lado
-import WhatsAppManager from './components/Admin/WhatsAppManager'; // Mantener por si se usa en otro lado
-
-// Nuevos componentes integrados
-import UnifiedStore from './components/Store/UnifiedStore';
-import CheckoutSystem from './components/Checkout/CheckoutSystem';
-import AppointmentCalendar from './components/Calendar/AppointmentCalendar';
 import AIChatSystem from './components/Chat/AIChatSystem';
-import TriviaSystem from './components/Gamification/TriviaSystem';
-import DragDropEditor from './components/Editor/DragDropEditor';
-import PromotionsManager from './components/Promotions/PromotionsManager';
 import FloatingCart from './components/Cart/FloatingCart';
 
-// Páginas de funcionalidad
-import PaymentSystem from './components/Payment/PaymentSystem';
-import CheckoutPage from './pages/CheckoutPage';
-import ThankYouPage from './components/Payment/ThankYouPage';
-import AIConsultationSystem from './components/Consultation/AIConsultationSystem';
-import AppointmentScheduler from './components/Appointment/AppointmentScheduler';
-import AffiliateRegister from './components/Affiliates/AffiliateRegister';
-import AffiliateOverview from './components/Affiliates/AffiliateOverview';
+// Lazy load pages for better performance
+const HomePage = lazy(() => import('./components/Home/HomePage'));
+const Contact = lazy(() => import('./components/Contact/Contact'));
+const Blog = lazy(() => import('./components/Blog/Blog'));
+const BlogArticle = lazy(() => import('./components/Blog/BlogArticle'));
+const ServicesOverview = lazy(() => import('./pages/ServicesOverview'));
+const ServicioPenalPage = lazy(() => import('./pages/ServicioPenalPage'));
+const ServicioCivilPage = lazy(() => import('./pages/ServicioCivilPage'));
+const ServicioComercialPage = lazy(() => import('./pages/ServicioComercialPage'));
+const ServicioTransitoPage = lazy(() => import('./pages/ServicioTransitoPage'));
+const ServicioAduaneroPage = lazy(() => import('./pages/ServicioAduaneroPage'));
+const ServicioConstitucionalPage = lazy(() => import('./pages/ServicioConstitucionalPage.jsx'));
+const ServicioLaboralPage = lazy(() => import('./pages/ServicioLaboralPage.jsx'));
+const ConsultasCivilesPage = lazy(() => import('./pages/ConsultasCivilesPage'));
+const ConsultasPenalesPage = lazy(() => import('./pages/ConsultasPenalesPage'));
+const ConsultaGeneral = lazy(() => import('./pages/ConsultaGeneral'));
+const TestimoniosPage = lazy(() => import('./pages/TestimoniosPage'));
+const AfiliadosPage = lazy(() => import('./pages/AfiliadosPage'));
+const ReferidosPage = lazy(() => import('./pages/ReferidosPage'));
+const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
+const TermsConditionsPage = lazy(() => import('./pages/TermsConditionsPage'));
+const ForumPage = lazy(() => import('./pages/ForumPage'));
+const NewsletterPage = lazy(() => import('./pages/NewsletterPage'));
+const NewsPage = lazy(() => import('./pages/NewsPage.jsx'));
+const NewsArticle = lazy(() => import('./pages/NewsArticle.jsx'));
+const AboutPage = lazy(() => import('./components/About/AboutPage'));
+const Ebooks = lazy(() => import('./components/Ebooks/EbookStore'));
+const CourseCatalog = lazy(() => import('./components/Courses/CourseSystem'));
+const SubscriptionPlans = lazy(() => import('./components/Subscriptions/SubscriptionPlans'));
+const CourseDetail = lazy(() => import('./pages/CourseDetailPage'));
+const UnifiedStore = lazy(() => import('./components/Store/UnifiedStore'));
+const AppointmentScheduler = lazy(() => import('./components/Appointment/AppointmentScheduler'));
+const AIConsultationSystem = lazy(() => import('./components/Consultation/AIConsultationSystem'));
 
-// Páginas de error
-import NotFoundPage from './components/Common/NotFoundPage';
-import UnauthorizedPage from './components/Common/UnauthorizedPage';
-import ServerErrorPage from './components/Common/ServerErrorPage';
+const Login = lazy(() => import('./components/Auth/Login'));
+const Register = lazy(() => import('./components/Auth/Register'));
+const ForgotPassword = lazy(() => import('./components/Auth/ForgotPassword'));
 
-function App() {
-  const [isLoading, setIsLoading] = useState(true);
+const DashboardLayout = lazy(() => import('./components/Dashboard/DashboardLayout'));
+const DashboardOverview = lazy(() => import('./components/Dashboard/DashboardOverview'));
+const PurchaseHistory = lazy(() => import('./components/Dashboard/PurchaseHistory'));
+const UserProfile = lazy(() => import('./components/Dashboard/UserProfile'));
+const UserCourses = lazy(() => import('./components/Dashboard/UserCourses'));
+const SubscriptionManagement = lazy(() => import('./components/Dashboard/SubscriptionManagement'));
 
-  useEffect(() => {
-    // Simular tiempo de carga inicial
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+const AdminLayout = lazy(() => import('./components/Admin/AdminLayout'));
+const AdminOverview = lazy(() => import('./components/Admin/AdminOverview'));
+const UserManagement = lazy(() => import('./components/Admin/UserManagement'));
+const BlogManagement = lazy(() => import('./components/Admin/BlogManagement'));
+const CourseManagement = lazy(() => import('./components/Admin/CourseManagement'));
+const ProductManagement = lazy(() => import('./components/Admin/ProductManagement'));
 
-    return () => clearTimeout(timer);
-  }, []);
+const CheckoutSystem = lazy(() => import('./components/Checkout/CheckoutSystem'));
+const ThankYouPage = lazy(() => import('./components/Payment/ThankYouPage'));
 
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
+const NotFoundPage = lazy(() => import('./components/Common/NotFoundPage'));
 
-  return (
+const App = () => (
     <AuthProvider>
-      <CartProvider>
-        <ModuleProvider>
-    <ThemeProvider>
-            <div className="App min-h-screen bg-background-primary text-text-primary w-full overflow-x-hidden">
-        <Navbar />
-        <main className="flex-1 w-full no-x-overflow">
-          <Routes>
-                  {/* Rutas públicas (visitantes) */}
-            <Route path="/" element={<HomePage />} />
-                  <Route path="/productos" element={<ProductsPage />} />
-                  <Route path="/servicios" element={<ServicesOverview />} />
-                  <Route path="/consultas" element={<ConsultasPage />} />
-                  <Route path="/servicios/penal" element={<ServicioPenalPage />} />
-                  <Route path="/servicios/civil" element={<ServicioCivilPage />} />
-                  <Route path="/servicios/comercial" element={<ServicioComercialPage />} />
-                  <Route path="/servicios/transito" element={<ServicioTransitoPage />} />
-                  <Route path="/servicios/aduanas" element={<ServicioAduaneroPage />} />
-                  <Route path="/servicios/constitucional" element={<ServicioConstitucionalPage />} />
-                  <Route path="/servicios/laboral" element={<ServicioLaboralPage />} />
-                  <Route path="/consulta-general" element={<ConsultaGeneral />} />
-                  <Route path="/consultas/civiles" element={<ConsultasCivilesPage />} />
-                  <Route path="/consultas/penales" element={<ConsultasPenalesPage />} />
-                  <Route path="/testimonios" element={<TestimoniosPage />} />
-                  <Route path="/afiliados" element={<AfiliadosPage />} />
-                  <Route path="/referidos" element={<ReferidosPage />} />
-                  <Route path="/privacidad" element={<PrivacyPolicyPage />} />
-                  <Route path="/terminos" element={<TermsConditionsPage />} />
-                  <Route path="/foro" element={<ForumPage />} />
-                  <Route path="/blog-legal" element={<BlogPage />} />
-                  <Route path="/noticias" element={<NewsPage />} />
-                  <Route path="/noticias/:id" element={<NewsArticle />} />
-                  <Route path="/newsletter" element={<NewsletterPage />} />
-                  <Route path="/sobre-nosotros" element={<AboutPage />} />
-                  <Route path="/contacto" element={<Contact />} />
-                  <Route path="/blog" element={<Blog />} />
-                  <Route path="/blog/:articleId" element={<BlogArticle />} />
-                  <Route path="/ebooks" element={<Ebooks />} />
-                  <Route path="/cursos" element={<CourseCatalog />} />
-                  <Route path="/cursos/:slug" element={<CourseDetail />} />
-                  <Route path="/planes" element={<SubscriptionPlans />} />
-                  <Route path="/tienda" element={<UnifiedStore />} />
-                  <Route path="/calendario" element={<CalendarPage />} />
-                  <Route path="/promociones" element={<PromotionsManager />} />
-                  <Route path="/politicas-privacidad" element={<PrivacyPolicy />} />
-                  <Route path="/terminos-condiciones" element={<TerminosCondiciones />} />
-                  <Route path="/seguridad" element={<Seguridad />} />
-                  
-                  {/* Rutas de autenticación (solo visitantes) */}
-                  <Route path="/login" element={
-                    <VisitorOnlyRoute>
-                      <Login />
-                    </VisitorOnlyRoute>
-                  } />
-                  <Route path="/inicio-sesion" element={
-                    <VisitorOnlyRoute>
-                      <Login />
-                    </VisitorOnlyRoute>
-                  } />
-                  <Route path="/register" element={
-                    <VisitorOnlyRoute>
-                      <Register />
-                    </VisitorOnlyRoute>
-                  } />
-                  <Route path="/registro" element={
-                    <VisitorOnlyRoute>
-                      <Register />
-                    </VisitorOnlyRoute>
-                  } />
-                  <Route path="/forgot-password" element={
-                    <VisitorOnlyRoute>
-                      <ForgotPassword />
-                    </VisitorOnlyRoute>
-                  } />
-                  <Route path="/auth/callback" element={<AuthCallback />} />
-                  
-                  {/* Rutas de Cliente (Nueva Estructura Profesional) */}
-                  <Route 
-                    path="/dashboard" 
-                    element={
-                      <ClientRoute>
-                        <DashboardLayout />
-                      </ClientRoute>
-                    }
-                  >
-                    <Route index element={<DashboardOverview />} />
-                    <Route path="perfil" element={<UserProfile />} />
-                    <Route path="compras" element={<PurchaseHistory />} />
-                    <Route path="mis-cursos" element={<UserCourses />} />
-                    <Route path="suscripcion" element={<SubscriptionManagement />} />
-                    <Route path="mis-cursos/:courseId" element={<CoursePlayer />} />
-                    <Route path="trivia" element={<TriviaGame />} />
-                    <Route path="consulta-ia" element={<AIConsultationSystem />} />
-                    {/* Próximamente: Añadir aquí más rutas para tokens, referidos, etc. */}
-                  </Route>
-                  
-                  {/* Rutas de Administrador (Nueva Estructura Profesional) */}
-                  <Route 
-                    path="/admin" 
-                    element={
-                      <AdminRoute>
-                        <AdminLayout />
-                      </AdminRoute>
-                    }
-                  >
-                    <Route index element={<AdminOverview />} />
-                    <Route path="users" element={<UserManagement />} />
-                    <Route path="products" element={<ProductManagement />} />
-                    <Route path="blog" element={<BlogManagement />} />
-                    <Route path="courses" element={<CourseManagement />} />
-                    <Route path="formularios" element={<FormSubmissions />} />
-                    {/* Próximamente: Añadir aquí más rutas para productos, cursos, etc. */}
-                    {/* <Route path="products" element={<ProductManagement />} /> */}
-                    {/* <Route path="courses" element={<CourseManagement />} /> */}
-                  </Route>
-                  
-                  {/* Rutas de funcionalidad */}
+        <CartProvider>
+            <ModuleProvider>
+                <ThemeProvider>
+                    <div className="App min-h-screen bg-background-primary text-text-primary w-full overflow-x-hidden">
+                        <Navbar />
+                        <main className="flex-1 w-full no-x-overflow">
+                            <Suspense fallback={<LoadingSpinner />}>
+                                <Routes>
+                                    {/* Public Routes */}
+                                    <Route path="/" element={<HomePage />} />
+                                    <Route path="/servicios" element={<ServicesOverview />} />
+                                    <Route path="/servicios/penal" element={<ServicioPenalPage />} />
+                                    <Route path="/servicios/civil" element={<ServicioCivilPage />} />
+                                    <Route path="/servicios/comercial" element={<ServicioComercialPage />} />
+                                    <Route path="/servicios/transito" element={<ServicioTransitoPage />} />
+                                    <Route path="/servicios/aduanas" element={<ServicioAduaneroPage />} />
+                                    <Route path="/servicios/constitucional" element={<ServicioConstitucionalPage />} />
+                                    <Route path="/servicios/laboral" element={<ServicioLaboralPage />} />
+                                    <Route path="/consulta-general" element={<ConsultaGeneral />} />
+                                    <Route path="/consultas/civiles" element={<ConsultasCivilesPage />} />
+                                    <Route path="/consultas/penales" element={<ConsultasPenalesPage />} />
+                                    <Route path="/consulta-ia" element={<AIConsultationSystem />} />
+                                    <Route path="/blog" element={<Blog />} />
+                                    <Route path="/blog/:articleId" element={<BlogArticle />} />
+                                    <Route path="/noticias" element={<NewsPage />} />
+                                    <Route path="/noticias/:id" element={<NewsArticle />} />
+                                    <Route path="/foro" element={<ForumPage />} />
+                                    <Route path="/newsletter" element={<NewsletterPage />} />
+                                    <Route path="/cursos" element={<CourseCatalog />} />
+                                    <Route path="/cursos/:slug" element={<CourseDetail />} />
+                                    <Route path="/ebooks" element={<Ebooks />} />
+                                    <Route path="/planes" element={<SubscriptionPlans />} />
+                                    <Route path="/tienda" element={<UnifiedStore />} />
+                                    <Route path="/sobre-nosotros" element={<AboutPage />} />
+                                    <Route path="/testimonios" element={<TestimoniosPage />} />
+                                    <Route path="/afiliados" element={<AfiliadosPage />} />
+                                    <Route path="/referidos" element={<ReferidosPage />} />
+                                    <Route path="/contacto" element={<Contact />} />
                                     <Route path="/agendar-cita" element={<AppointmentScheduler />} />
-                  <Route path="/afiliados/registro" element={<AffiliateRegister />} />
-                  <Route path="/afiliados/dashboard" element={
-                    <ProtectedRoute requiredRole="affiliate">
-                      <AffiliateOverview />
-                    </ProtectedRoute>
-                  } />
-                  
-                  {/* Rutas de pagos */}
-            <Route path="/payment" element={<PaymentSystem />} />
-                  <Route path="/checkout" element={<CheckoutSystem />} />
-                  <Route path="/checkout-page" element={<CheckoutPage />} />
-                  <Route path="/payment/success" element={<ThankYouPage />} />
-                  <Route path="/payment/failed" element={<ThankYouPage />} />
-                  
-                  {/* Rutas de error */}
-                  <Route path="/unauthorized" element={<UnauthorizedPage />} />
-                  <Route path="/server-error" element={<ServerErrorPage />} />
-                  <Route path="/404" element={<NotFoundPage />} />
-                  
-                  {/* Redirecciones y rutas legacy */}
-                  <Route path="/cliente" element={<Navigate to="/dashboard" replace />} />
-                  <Route path="/admin-dashboard" element={<Navigate to="/admin" replace />} />
-                  <Route path="/user" element={<Navigate to="/dashboard" replace />} />
-                  
-                  {/* Página 404 para rutas no encontradas */}
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </main>
-        <Footer />
-              
-              {/* Toast notifications */}
-              <Toaster
-                position="top-right"
-                toastOptions={{
-                  duration: 4000,
-                  style: {
-                    background: '#363636',
-                    color: '#fff',
-                  },
-                  success: {
-                    duration: 3000,
-                    iconTheme: {
-                      primary: '#22c55e',
-                      secondary: '#fff',
-                    },
-                  },
-                  error: {
-                    duration: 5000,
-                    iconTheme: {
-                      primary: '#ef4444',
-                      secondary: '#fff',
-                    },
-                  },
-                }}
-              />
-      </div>
-      
-      {/* Chat AI Global */}
-      <AIChatSystem />
-      
-      {/* Carrito Flotante Global */}
-      <FloatingCart />
-    </ThemeProvider>
-        </ModuleProvider>
-      </CartProvider>
+                                    <Route path="/privacidad" element={<PrivacyPolicyPage />} />
+                                    <Route path="/terminos" element={<TermsConditionsPage />} />
+
+                                    {/* Auth Routes */}
+                                    <Route path="/login" element={<VisitorOnlyRoute><Login /></VisitorOnlyRoute>} />
+                                    <Route path="/register" element={<VisitorOnlyRoute><Register /></VisitorOnlyRoute>} />
+                                    <Route path="/forgot-password" element={<VisitorOnlyRoute><ForgotPassword /></VisitorOnlyRoute>} />
+
+                                    {/* Protected Client Routes */}
+                                    <Route path="/dashboard" element={<ClientRoute><DashboardLayout /></ClientRoute>}>
+                                        <Route index element={<DashboardOverview />} />
+                                        <Route path="perfil" element={<UserProfile />} />
+                                        <Route path="compras" element={<PurchaseHistory />} />
+                                        <Route path="mis-cursos" element={<UserCourses />} />
+                                        <Route path="suscripcion" element={<SubscriptionManagement />} />
+                                    </Route>
+
+                                    {/* Protected Admin Routes */}
+                                    <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
+                                        <Route index element={<AdminOverview />} />
+                                        <Route path="users" element={<UserManagement />} />
+                                        <Route path="blog" element={<BlogManagement />} />
+                                        <Route path="courses" element={<CourseManagement />} />
+                                        <Route path="products" element={<ProductManagement />} />
+                                    </Route>
+
+                                    {/* Payment Routes */}
+                                    <Route path="/checkout" element={<CheckoutSystem />} />
+                                    <Route path="/thank-you" element={<ThankYouPage />} />
+
+                                    {/* Catch-all */}
+                                    <Route path="*" element={<NotFoundPage />} />
+                                </Routes>
+                            </Suspense>
+                        </main>
+                        <Footer />
+                        <Toaster position="top-right" toastOptions={{ duration: 4000, style: { background: '#363636', color: '#fff' } }} />
+                        <AIChatSystem />
+                        <FloatingCart />
+                    </div>
+                </ThemeProvider>
+            </ModuleProvider>
+        </CartProvider>
     </AuthProvider>
-  );
-}
+);
 
 export default App;
