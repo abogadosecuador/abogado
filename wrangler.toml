@@ -1,7 +1,7 @@
-name = "abogadosecuador"
+name = "abogados"
 main = "_worker.js"
 compatibility_date = "2025-01-01"
-account_id = "06ea65e2b51d0f23f0c44f92962ac95d"
+account_id = "70661c46051942965565a5c976219dde"
 workers_dev = true
 legacy_env = true
 

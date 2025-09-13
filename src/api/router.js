@@ -10,6 +10,7 @@ import { DocumentHandler } from './handlers/documents.js';
 import { ServiceHandler } from './handlers/services.js';
 import { HealthHandler } from './handlers/health.js';
 import { FormsHandler } from './handlers/forms.js';
+import { AdminHandler } from './handlers/admin.js';
 import { BankTransferHandler } from './handlers/bankTransferHandler.js';
 import { corsHeaders } from './headers.js';
 import { createSupabaseClient } from '../lib/supabase.js';
@@ -31,6 +32,7 @@ export class APIRouter {
     this.serviceHandler = new ServiceHandler(env, this.supabase);
     this.healthHandler = new HealthHandler(env, this.supabase);
     this.formsHandler = new FormsHandler(env, this.supabase);
+    this.adminHandler = new AdminHandler(env, this.supabase);
     this.bankTransferHandler = new BankTransferHandler(env, this.supabase);
   }
 
@@ -118,6 +120,9 @@ export class APIRouter {
         
         case 'forms':
           return await this.formsHandler.handle(request, method, id, action);
+
+        case 'admin':
+          return await this.adminHandler.handle(request, method, id); // id here represents the resource, e.g., 'users'
         
         case 'bank-transfer':
           if (method === 'POST') {

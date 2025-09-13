@@ -16,91 +16,7 @@ import {
 } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 
-import { dataService } from '../../services/supabaseService';
 import { useAuth } from '../../context/AuthContext';
-
-// Datos de muestra para el historial de compras
-const SAMPLE_PURCHASES = [
-  {
-    id: 'purchase-1',
-    type: 'course',
-    item_id: 'curso-derecho-penal-1',
-    title: 'Fundamentos de Derecho Penal',
-    amount: 49.99,
-    date: '2025-03-15',
-    status: 'completed',
-    payment_method: 'paypal',
-    invoice_url: '#',
-    thumbnail: '/images/courses/derecho-penal.jpg'
-  },
-  {
-    id: 'purchase-2',
-    type: 'course',
-    item_id: 'masterclass-litigacion-1',
-    title: 'Masterclass: Técnicas de Litigación Oral',
-    amount: 79.99,
-    date: '2025-02-10',
-    status: 'completed',
-    payment_method: 'bank_transfer',
-    invoice_url: '#',
-    thumbnail: '/images/courses/litigacion.jpg'
-  },
-  {
-    id: 'purchase-3',
-    type: 'ebook',
-    item_id: 'ebook-guia-penal-1',
-    title: 'Guía Práctica de Derecho Penal',
-    amount: 19.99,
-    date: '2025-01-20',
-    status: 'completed',
-    payment_method: 'paypal',
-    invoice_url: '#',
-    thumbnail: '/images/ebooks/guia-penal.jpg'
-  },
-  {
-    id: 'purchase-4',
-    type: 'tokens',
-    item_id: 'token-package-standard',
-    title: 'Paquete de 10 Tokens',
-    amount: 45.00,
-    date: '2025-04-05',
-    status: 'completed',
-    payment_method: 'paypal',
-    invoice_url: '#',
-    thumbnail: '/images/tokens/token-package.jpg',
-    details: {
-      token_count: 10
-    }
-  },
-  {
-    id: 'purchase-5',
-    type: 'consultation',
-    item_id: 'consultation-1',
-    title: 'Consulta de Derecho Laboral',
-    amount: 59.99,
-    date: '2025-03-28',
-    status: 'completed',
-    payment_method: 'tokens',
-    invoice_url: '#',
-    thumbnail: '/images/consultations/labor-law.jpg',
-    details: {
-      token_cost: 5,
-      scheduled_date: '2025-04-02'
-    }
-  },
-  {
-    id: 'purchase-6',
-    type: 'course',
-    item_id: 'curso-transito-1',
-    title: 'Infracciones de Tránsito y Defensa',
-    amount: 39.99,
-    date: '2025-04-10',
-    status: 'completed',
-    payment_method: 'paypal',
-    invoice_url: '#',
-    thumbnail: '/images/courses/transito.jpg'
-  }
-];
 
 const PurchaseCard = ({ purchase }) => {
   // Renderizar icono según el tipo de compra
@@ -269,31 +185,41 @@ const PurchaseHistory = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [sortBy, setSortBy] = useState('recent');
-  
+
   useEffect(() => {
     const fetchPurchases = async () => {
       if (!user) return;
-      
       try {
-        // En una aplicación real, obtendríamos las compras desde Supabase
-        // const { data, error } = await dataService.query(
-        //   'purchases',
-        //   q => q.eq('user_id', user.id).eq('status', 'completed')
-        // );
-        // if (error) throw error;
-        
-        // Por ahora, usamos datos de muestra
-        setTimeout(() => {
-          setPurchases(SAMPLE_PURCHASES);
-          setLoading(false);
-        }, 800);
+        setLoading(true);
+        const token = localStorage.getItem('authToken');
+        const response = await fetch('/api/payments', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (!response.ok) {
+          throw new Error((await response.json()).error || 'Failed to fetch purchase history');
+        }
+        const data = await response.json();
+        // Adaptar los datos de la API al formato que espera el frontend
+        const formattedPurchases = data.data.map(p => ({
+          id: p.id,
+          type: p.metadata?.type || 'generic',
+          item_id: p.metadata?.item_id || p.id,
+          title: p.metadata?.description || 'Compra General',
+          amount: p.amount,
+          date: p.created_at,
+          status: p.status,
+          payment_method: p.payment_method,
+          invoice_url: p.invoice_url || '#',
+          thumbnail: p.metadata?.thumbnail || '/images/placeholder.jpg',
+        }));
+        setPurchases(formattedPurchases);
       } catch (error) {
-        console.error('Error al obtener historial de compras:', error);
-        toast.error('Error al cargar tu historial de compras');
+        toast.error(`Error al cargar historial: ${error.message}`);
+      } finally {
         setLoading(false);
       }
     };
-    
+
     fetchPurchases();
   }, [user]);
   

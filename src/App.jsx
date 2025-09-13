@@ -65,19 +65,20 @@ import Register from './components/Auth/Register';
 import ForgotPassword from './components/Auth/ForgotPassword';
 import AuthCallback from './components/Auth/AuthCallback';
 
-// Páginas de cliente
-import ClientDashboard from './components/Dashboard/ClientDashboard';
-import UserProfile from './components/Dashboard/UserProfile';
-import DashboardHome from './components/Dashboard/DashboardHome';
+// Páginas de cliente (Nueva estructura)
 import DashboardLayout from './components/Dashboard/DashboardLayout';
-import UserCourses from './components/Dashboard/UserCourses';
+import DashboardOverview from './components/Dashboard/DashboardOverview';
 import PurchaseHistory from './components/Dashboard/PurchaseHistory';
-import DashboardPage from './components/Dashboard/DashboardPage';
+import UserProfile from './components/Dashboard/UserProfile';
+import UserCourses from './components/Dashboard/UserCourses';
 
-// Páginas de administrador
-import AdminDashboard from './components/Admin/AdminDashboardComplete';
-import DataExporter from './components/Admin/DataExporter';
-import WhatsAppManager from './components/Admin/WhatsAppManager';
+// Páginas de administrador (Nueva estructura)
+import AdminLayout from './components/Admin/AdminLayout';
+import AdminOverview from './components/Admin/AdminOverview';
+import UserManagement from './components/Admin/UserManagement';
+import BlogManagement from './components/Admin/BlogManagement';
+import DataExporter from './components/Admin/DataExporter'; // Mantener por si se usa en otro lado
+import WhatsAppManager from './components/Admin/WhatsAppManager'; // Mantener por si se usa en otro lado
 
 // Nuevos componentes integrados
 import UnifiedStore from './components/Store/UnifiedStore';
@@ -196,94 +197,39 @@ function App() {
                   } />
                   <Route path="/auth/callback" element={<AuthCallback />} />
                   
-                  {/* Rutas de cliente (requieren autenticación) */}
-                  <Route path="/dashboard" element={
-                    <ClientRoute>
-                      <ClientDashboard />
-                    </ClientRoute>
-                  } />
-                  <Route path="/dashboard/perfil" element={
-                    <ClientRoute>
-                      <UserProfile />
-                    </ClientRoute>
-                  } />
-                  <Route path="/dashboard/citas" element={
-                    <ClientRoute>
-                      <DashboardHome />
-                    </ClientRoute>
-                  } />
-                  <Route path="/dashboard/consultas" element={
-                    <ClientRoute>
-                      <DashboardLayout />
-                    </ClientRoute>
-                  } />
-                  <Route path="/dashboard/mis-cursos" element={
-                    <ClientRoute>
-                      <UserCourses />
-                    </ClientRoute>
-                  } />
-                  <Route path="/dashboard/mis-ebooks" element={
-                    <ClientRoute>
-                      <PurchaseHistory />
-                    </ClientRoute>
-                  } />
-                  <Route path="/dashboard/tokens" element={
-                    <ClientRoute>
-                      <DashboardPage />
-                    </ClientRoute>
-                  } />
-                  <Route path="/dashboard/referidos" element={
-                    <ClientRoute>
-                      <DashboardHome />
-                    </ClientRoute>
-                  } />
+                  {/* Rutas de Cliente (Nueva Estructura Profesional) */}
+                  <Route 
+                    path="/dashboard" 
+                    element={
+                      <ClientRoute>
+                        <DashboardLayout />
+                      </ClientRoute>
+                    }
+                  >
+                    <Route index element={<DashboardOverview />} />
+                    <Route path="perfil" element={<UserProfile />} />
+                    <Route path="compras" element={<PurchaseHistory />} />
+                    <Route path="mis-cursos" element={<UserCourses />} />
+                    {/* Próximamente: Añadir aquí más rutas para tokens, referidos, etc. */}
+                  </Route>
                   
-                  {/* Rutas de administrador */}
-                  <Route path="/admin" element={
-                    <AdminRoute>
-                      <AdminDashboard />
-                    </AdminRoute>
-                  } />
-                  <Route path="/admin/usuarios" element={
-                    <AdminRoute>
-                      <DataExporter />
-                    </AdminRoute>
-                  } />
-                  <Route path="/admin/productos" element={
-                    <AdminRoute>
-                      <AdminDashboard />
-                    </AdminRoute>
-                  } />
-                  <Route path="/admin/cursos" element={
-                    <AdminRoute>
-                      <AdminDashboard />
-                    </AdminRoute>
-                  } />
-                  <Route path="/admin/blog" element={
-                    <AdminRoute>
-                      <AdminDashboard />
-                    </AdminRoute>
-                  } />
-                  <Route path="/admin/citas" element={
-                    <AdminRoute>
-                      <AdminDashboard />
-                    </AdminRoute>
-                  } />
-                  <Route path="/admin/afiliados" element={
-                    <AdminRoute>
-                      <AdminDashboard />
-                    </AdminRoute>
-                  } />
-                  <Route path="/admin/configuracion" element={
-                    <AdminRoute>
-                      <AdminDashboard />
-                    </AdminRoute>
-                  } />
-                  <Route path="/admin/analiticas" element={
-                    <AdminRoute>
-                      <AdminDashboard />
-                    </AdminRoute>
-                  } />
+                  {/* Rutas de Administrador (Nueva Estructura Profesional) */}
+                  <Route 
+                    path="/admin" 
+                    element={
+                      <AdminRoute>
+                        <AdminLayout />
+                      </AdminRoute>
+                    }
+                  >
+                    <Route index element={<AdminOverview />} />
+                    <Route path="users" element={<UserManagement />} />
+                    <Route path="products" element={<ProductManagement />} />
+                    <Route path="blog" element={<BlogManagement />} />
+                    {/* Próximamente: Añadir aquí más rutas para productos, cursos, etc. */}
+                    {/* <Route path="products" element={<ProductManagement />} /> */}
+                    {/* <Route path="courses" element={<CourseManagement />} /> */}
+                  </Route>
                   
                   {/* Rutas de funcionalidad */}
                   <Route path="/consulta-ia" element={<AIConsultationSystem />} />

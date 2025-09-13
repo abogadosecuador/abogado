@@ -101,10 +101,10 @@ const Navbar = () => {
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-brand to-accent rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-xl">AE</span>
               </div>
-              <span className="text-xl font-bold text-gray-900 hidden sm:block">
+              <span className="text-xl font-bold text-neutral-900 hidden sm:block">
                 AbogadosEcuador
               </span>
             </Link>
@@ -120,8 +120,8 @@ const Navbar = () => {
                       onClick={(e) => { e.stopPropagation(); toggleDropdown(item.name); }}
                       className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                         isActive(item.href) 
-                          ? 'bg-blue-50 text-blue-600' 
-                          : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
+                          ? 'bg-brand/10 text-brand' 
+                          : 'text-neutral-700 hover:bg-neutral-50 hover:text-brand'
                       }`}
                     >
                       <span>{item.name}</span>
@@ -136,7 +136,7 @@ const Navbar = () => {
                             key={subItem.name}
                             to={subItem.href}
                             onClick={() => setDropdownOpen({})}
-                            className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                            className="flex items-center space-x-2 px-4 py-2 text-sm text-neutral-700 hover:bg-brand/10 hover:text-brand transition-colors"
                           >
                             {subItem.icon}
                             <span>{subItem.name}</span>
@@ -150,8 +150,8 @@ const Navbar = () => {
                     to={item.href}
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                       isActive(item.href)
-                        ? 'bg-blue-50 text-blue-600'
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
+                        ? 'bg-brand/10 text-brand'
+                        : 'text-neutral-700 hover:bg-neutral-50 hover:text-brand'
                     }`}
                   >
                     {item.name}
@@ -182,10 +182,10 @@ const Navbar = () => {
             </div>
 
             {/* Cart */}
-            <button className="p-2 text-gray-600 hover:text-blue-600 transition-colors relative">
+            <button className="p-2 text-neutral-600 hover:text-brand transition-colors relative">
               <ShoppingCartIcon className="w-5 h-5" />
               {items && items.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-danger text-white text-xs rounded-full flex items-center justify-center">
                   {items.length}
                 </span>
               )}
@@ -196,8 +196,9 @@ const Navbar = () => {
               <div className="relative dropdown-container">
                 <button
                   onClick={(e) => { e.stopPropagation(); setUserMenuOpen(!userMenuOpen); }}
-                  className="p-2 text-gray-600 hover:text-blue-600 transition-colors"
+                  className="p-2 text-neutral-600 hover:text-brand transition-colors"
                 >
+
                   <User className="w-5 h-5" />
                 </button>
                 {userMenuOpen && (
@@ -212,7 +213,7 @@ const Navbar = () => {
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors text-left"
+                      className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-danger hover:bg-red-50 transition-colors text-left"
                     >
                       <LogOut className="w-4 h-4" />
                       <span>Cerrar Sesión</span>
@@ -224,13 +225,13 @@ const Navbar = () => {
               <div className="hidden md:flex items-center space-x-2">
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-neutral-700 hover:text-brand transition-colors"
                 >
                   Iniciar Sesión
                 </Link>
                 <Link
                   to="/register"
-                  className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 bg-brand text-white text-sm font-medium rounded-lg hover:bg-brand-dark transition-colors"
                 >
                   Registrarse
                 </Link>
@@ -240,7 +241,7 @@ const Navbar = () => {
             {/* Mobile menu button */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="lg:hidden p-2 text-gray-600 hover:text-blue-600 transition-colors"
+              className="lg:hidden p-2 text-neutral-600 hover:text-brand transition-colors"
             >
               {isOpen ? <X className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
             </button>

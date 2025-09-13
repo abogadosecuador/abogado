@@ -26,6 +26,7 @@ export const AuthProvider = ({ children }) => {
         if (!res.ok) {
           localStorage.removeItem('user');
           localStorage.removeItem('authToken');
+          setUser(null); // CRÍTICO: Limpiar el estado del usuario si el token es inválido
           return;
         }
         const { data } = await res.json();
