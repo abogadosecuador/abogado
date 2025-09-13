@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { FaPaypal, FaCreditCard, FaBitcoin, FaDollarSign, FaUpload, FaCheck, FaTimes } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
+import { useAuthStore } from '../../stores/authStore';
 
 const PaymentSystem = ({ amount, onPaymentComplete, productName = 'Servicio Legal' }) => {
+  const { user } = useAuthStore();
   const [paymentMethod, setPaymentMethod] = useState('paypal');
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
@@ -13,7 +15,9 @@ const PaymentSystem = ({ amount, onPaymentComplete, productName = 'Servicio Lega
     name: ''
   });
 
-  const paymentMethods = [
+  const ENABLE_CRYPTO = import.meta.env?.VITE_ENABLE_CRYPTO === 'true';
+
+  let paymentMethods = [
     {
       id: 'paypal',
       name: 'PayPal',
@@ -31,14 +35,6 @@ const PaymentSystem = ({ amount, onPaymentComplete, productName = 'Servicio Lega
       description: 'Visa, Mastercard, American Express'
     },
     {
-      id: 'crypto',
-      name: 'Criptomonedas',
-      icon: FaBitcoin,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
-      description: 'Bitcoin, Ethereum, USDT'
-    },
-    {
       id: 'transfer',
       name: 'Transferencia Bancaria',
       icon: FaDollarSign,
@@ -48,6 +44,18 @@ const PaymentSystem = ({ amount, onPaymentComplete, productName = 'Servicio Lega
     }
   ];
 
+  // Agregar crypto sólo si la variable de entorno lo habilita explícitamente
+  if (ENABLE_CRYPTO) {
+    paymentMethods.splice(2, 0, {
+      id: 'crypto',
+      name: 'Criptomonedas',
+      icon: FaBitcoin,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50',
+      description: 'Bitcoin, Ethereum, USDT'
+    });
+  }
+
   const handlePayment = async () => {
     setIsProcessing(true);
     
@@ -56,30 +64,38 @@ const PaymentSystem = ({ amount, onPaymentComplete, productName = 'Servicio Lega
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Aquí iría la lógica real de pago según el método seleccionado
+      let result;
       switch (paymentMethod) {
         case 'paypal':
-          await processPayPalPayment();
+          result = await processPayPalPayment();
           break;
         case 'card':
-          await processCardPayment();
+          result = await processCardPayment();
           break;
         case 'crypto':
-          await processCryptoPayment();
+          if (!ENABLE_CRYPTO) {
+            throw new Error('El pago con criptomonedas está desactivado.');
+          }
+          result = await processCryptoPayment();
           break;
         case 'transfer':
-          await processBankTransfer();
+          result = await processBankTransfer();
           break;
         default:
           throw new Error('Método de pago no válido');
       }
-      
-      toast.success('Pago procesado exitosamente');
-      onPaymentComplete && onPaymentComplete({
-        method: paymentMethod,
-        amount,
-        transactionId: generateTransactionId(),
-        timestamp: new Date().toISOString()
-      });
+      // Sólo marcar como completado si el método fue validado y finalizado
+      if (result?.finalized) {
+        toast.success('Pago procesado exitosamente');
+        onPaymentComplete && onPaymentComplete({
+          method: paymentMethod,
+          amount,
+          transactionId: result.transactionId || generateTransactionId(),
+          timestamp: new Date().toISOString()
+        });
+      } else if (result?.status === 'pending') {
+        toast('Comprobante enviado. Tu pago está en revisión.', { icon: '⏳' });
+      }
       
     } catch (error) {
       console.error('Error en el pago:', error);
@@ -93,6 +109,7 @@ const PaymentSystem = ({ amount, onPaymentComplete, productName = 'Servicio Lega
     // Integración con PayPal
     console.log('Procesando pago con PayPal...');
     // Aquí iría la integración real con PayPal
+    return { finalized: true };
   };
 
   const processCardPayment = async () => {
@@ -103,11 +120,13 @@ const PaymentSystem = ({ amount, onPaymentComplete, productName = 'Servicio Lega
     
     console.log('Procesando pago con tarjeta...');
     // Aquí iría la integración real con Stripe u otro procesador
+    return { finalized: true };
   };
 
   const processCryptoPayment = async () => {
     console.log('Procesando pago con criptomonedas...');
     // Aquí iría la integración real con procesadores de crypto
+    return { finalized: false };
   };
 
   const processBankTransfer = async () => {
@@ -116,7 +135,24 @@ const PaymentSystem = ({ amount, onPaymentComplete, productName = 'Servicio Lega
     }
     
     console.log('Procesando transferencia bancaria...');
-    // Aquí iría la lógica para verificar el comprobante
+    // Aquí se debe enviar el comprobante a backend para revisión manual
+    // No se otorga acceso inmediato; queda en estado pendiente
+    try {
+      const formData = new FormData();
+      formData.append('receipt', uploadedFile);
+      formData.append('amount', String(amount));
+      formData.append('productName', productName);
+      if (user) {
+        formData.append('userId', user.id);
+      }
+      await fetch('/api/payments/bank-transfer', {
+        method: 'POST',
+        body: formData
+      });
+    } catch (e) {
+      console.warn('No se pudo subir comprobante al backend (modo fallback):', e?.message);
+    }
+    return { status: 'pending', finalized: false };
   };
 
   const generateTransactionId = () => {

@@ -15,7 +15,7 @@ import PayPalButton from '../Payment/PayPalButton.jsx';
 
 const CheckoutSystem = () => {
   const navigate = useNavigate();
-  const { items: cartItems, clearCart, total } = useCart();
+  const { items: cartItems, clearCart, total, setCart } = useCart();
   const { user } = useAuth();
   
   const [currentStep, setCurrentStep] = useState(1);
@@ -60,13 +60,7 @@ const CheckoutSystem = () => {
     { id: 'qr', name: 'Código QR', icon: FaQrcode, color: 'pink' }
   ];
 
-  const promoCodes = {
-    'WELCOME10': 10,
-    'LEGAL20': 20,
-    'VIP30': 30,
-    'FIRST50': 50
-  };
-
+  
   const calculateSubtotal = () => {
     if (!cartItems || cartItems.length === 0) return 0;
     return cartItems.reduce((total, item) => total + (item.price * (item.quantity || 1)), 0);
@@ -83,13 +77,32 @@ const CheckoutSystem = () => {
     return subtotal + tax - discountAmount;
   };
 
-  const applyPromoCode = () => {
-    const code = promoCode.toUpperCase();
-    if (promoCodes[code]) {
-      setDiscount(promoCodes[code]);
-      toast.success(`¡Código aplicado! ${promoCodes[code]}% de descuento`);
-    } else {
-      toast.error('Código inválido');
+  const applyPromoCode = async () => {
+    if (!promoCode) return;
+
+    try {
+      const response = await fetch('/api/cart/apply-coupon', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Asume que tienes un token de sesión o autenticación si es necesario
+        },
+        body: JSON.stringify({ coupon_code: promoCode }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al aplicar el cupón');
+      }
+
+      // Actualizar el estado del carrito con los datos del backend
+      setCart(data.data); // Asume que el backend devuelve el carrito actualizado
+      setDiscount(data.data.coupon_applied.discount_amount); // Actualiza el descuento local para UI
+      toast.success(`Cupón "${data.data.coupon_applied.code}" aplicado con éxito!`);
+
+    } catch (error) {
+      toast.error(error.message || 'No se pudo aplicar el cupón');
     }
   };
 

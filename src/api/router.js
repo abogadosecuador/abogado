@@ -10,6 +10,7 @@ import { DocumentHandler } from './handlers/documents.js';
 import { ServiceHandler } from './handlers/services.js';
 import { HealthHandler } from './handlers/health.js';
 import { FormsHandler } from './handlers/forms.js';
+import { BankTransferHandler } from './handlers/bankTransferHandler.js';
 import { corsHeaders } from './headers.js';
 import { createSupabaseClient } from '../lib/supabase.js';
 import { RateLimiter } from '../lib/rate-limiter.js';
@@ -30,6 +31,7 @@ export class APIRouter {
     this.serviceHandler = new ServiceHandler(env, this.supabase);
     this.healthHandler = new HealthHandler(env, this.supabase);
     this.formsHandler = new FormsHandler(env, this.supabase);
+    this.bankTransferHandler = new BankTransferHandler(env, this.supabase);
   }
 
   async route(request, pathname) {
@@ -116,6 +118,12 @@ export class APIRouter {
         
         case 'forms':
           return await this.formsHandler.handle(request, method, id, action);
+        
+        case 'bank-transfer':
+          if (method === 'POST') {
+            return await this.bankTransferHandler.handle(request);
+          }
+          return this.methodNotAllowed();
         
         default:
           return this.notFound();

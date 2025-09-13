@@ -66,28 +66,28 @@ const Navbar = () => {
     { name: 'Inicio', href: '/', icon: <Home className="w-4 h-4" /> },
     { 
       name: 'Servicios', 
-      href: '/services',
+      href: '/servicios',
       icon: <Gavel className="w-4 h-4" />,
       dropdown: [
-        { name: 'Derecho Penal', href: '/services/penal', icon: <Shield className="w-4 h-4" /> },
-        { name: 'Derecho Civil', href: '/services/civil', icon: <FileText className="w-4 h-4" /> },
-        { name: 'Derecho Comercial', href: '/services/comercial', icon: <Briefcase className="w-4 h-4" /> },
-        { name: 'Tránsito', href: '/services/transito', icon: <FileText className="w-4 h-4" /> },
-        { name: 'Aduanero', href: '/services/aduanas', icon: <FileText className="w-4 h-4" /> }
+        { name: 'Derecho Penal', href: '/servicios/penal', icon: <Shield className="w-4 h-4" /> },
+        { name: 'Derecho Civil', href: '/servicios/civil', icon: <FileText className="w-4 h-4" /> },
+        { name: 'Derecho Comercial', href: '/servicios/comercial', icon: <Briefcase className="w-4 h-4" /> },
+        { name: 'Tránsito', href: '/servicios/transito', icon: <FileText className="w-4 h-4" /> },
+        { name: 'Aduanero', href: '/servicios/aduanas', icon: <FileText className="w-4 h-4" /> }
       ]
     },
     { 
       name: 'Productos', 
-      href: '/productos',
+      href: '/tienda',
       icon: <ShoppingCartIcon className="w-4 h-4" />,
       dropdown: [
-        { name: 'Catálogo', href: '/catalog', icon: <ShoppingCartIcon className="w-4 h-4" /> },
-        { name: 'Cursos', href: '/courses', icon: <BookOpen className="w-4 h-4" /> },
+        { name: 'Catálogo', href: '/tienda', icon: <ShoppingCartIcon className="w-4 h-4" /> },
+        { name: 'Cursos', href: '/cursos', icon: <BookOpen className="w-4 h-4" /> },
         { name: 'E-Books', href: '/ebooks', icon: <BookOpen className="w-4 h-4" /> },
         { name: 'Tienda', href: '/tienda', icon: <ShoppingCartIcon className="w-4 h-4" /> }
       ]
     },
-    { name: 'Consultas', href: '/consulta-gratis', icon: <MessageSquare className="w-4 h-4" /> },
+    { name: 'Consultas', href: '/consulta-general', icon: <MessageSquare className="w-4 h-4" /> },
     { name: 'Blog', href: '/blog', icon: <BookOpen className="w-4 h-4" /> },
     { name: 'Contacto', href: '/contacto', icon: <Phone className="w-4 h-4" /> }
   ];
@@ -113,11 +113,11 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-1">
             {navigation.map((item) => (
-              <div key={item.name} className="relative">
+              <div key={item.name} className="relative dropdown-container">
                 {item.dropdown ? (
                   <div>
                     <button
-                      onClick={() => toggleDropdown(item.name)}
+                      onClick={(e) => { e.stopPropagation(); toggleDropdown(item.name); }}
                       className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                         isActive(item.href) 
                           ? 'bg-blue-50 text-blue-600' 
@@ -193,9 +193,9 @@ const Navbar = () => {
 
             {/* User Menu */}
             {user ? (
-              <div className="relative">
+              <div className="relative dropdown-container">
                 <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  onClick={(e) => { e.stopPropagation(); setUserMenuOpen(!userMenuOpen); }}
                   className="p-2 text-gray-600 hover:text-blue-600 transition-colors"
                 >
                   <User className="w-5 h-5" />
