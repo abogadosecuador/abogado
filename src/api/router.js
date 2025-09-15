@@ -1,11 +1,4 @@
-        case 'cloudinary': {
-          // GET /api/cloudinary/list?prefix=&max_results=50
-          if (method === 'GET' && (id === 'list' || !id)) {
-            return await this.cloudinaryList(request);
-          }
-          return this.methodNotAllowed();
-        }
-/**
+        /**
  * API Router - Main routing logic
  */
 
@@ -194,6 +187,14 @@ export class APIRouter {
         
         case 'forms':
           return await this.formsHandler.handle(request, method, id, action);
+
+        case 'cloudinary': {
+          // GET /api/cloudinary/list?prefix=&max_results=50
+          if (method === 'GET' && (id === 'list' || !id)) {
+            return await this.cloudinaryList(request);
+          }
+          return this.methodNotAllowed();
+        }
 
         case 'admin':
           return await this.adminHandler.handle(request, method, id); // id here represents the resource, e.g., 'users'

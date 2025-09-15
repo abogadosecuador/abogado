@@ -31,65 +31,21 @@ async function handleRequest(request, env) {
     }
   }
   
-  // Handle static assets
-  const assetPath = ASSET_MANIFEST[path] || path;
-  const baseOrigin = env.APP_URL || (new URL(request.url)).origin;
-  const assetUrl = new URL(assetPath, baseOrigin);
+  // Handle static assets via Wrangler [assets] binding
+  // First, try to serve the requested path directly from assets
+  let assetResponse = await env.ASSETS.fetch(request);
   
-  try {
-    // Try to get from KV store first
-    let response = await env.ABOGADO_WILSON_KV.get(assetPath, { type: 'arrayBuffer' });
-    
-    if (response) {
-      // If found in KV, create a response from the cached data
-      const metadata = await env.ABOGADO_WILSON_KV.getWithMetadata(assetPath);
-      return new Response(response, {
-        headers: {
-          ...(metadata.metadata?.headers || { 'Content-Type': 'text/plain' }),
-          'Access-Control-Allow-Origin': '*'
-        }
-      });
+  // SPA fallback: if 404 and it's an HTML navigation (no extension), serve index.html
+  if (assetResponse.status === 404) {
+    const accept = request.headers.get('Accept') || '';
+    const isHtmlNavigation = accept.includes('text/html') && !path.includes('.') && request.method === 'GET';
+    if (isHtmlNavigation) {
+      const indexUrl = new URL('/index.html', request.url);
+      assetResponse = await env.ASSETS.fetch(new Request(indexUrl.toString(), request));
     }
-    
-    // If not in KV, fetch from origin
-    response = await fetch(assetUrl.toString(), request);
-    
-    // Cache successful responses
-    if (response.status === 200) {
-      const cacheResponse = response.clone();
-      const headers = new Headers(cacheResponse.headers);
-      headers.set('Cache-Control', 'public, max-age=31536000, immutable');
-      
-      await env.ABOGADO_WILSON_KV.put(
-        assetPath,
-        await cacheResponse.arrayBuffer(),
-        { metadata: { headers: Object.fromEntries(headers.entries()) }}
-      );
-    }
-    
-    return response;
-  } catch (error) {
-    console.error('Asset fetch error:', error);
-    
-    // For SPA routing, return index.html for HTML requests
-    const acceptHeader = request.headers.get('Accept') || '';
-    if (acceptHeader.includes('text/html') && !path.includes('.')) {
-      const indexHtml = await env.ABOGADO_WILSON_KV.get('/index.html', { type: 'text' });
-      if (indexHtml) {
-        return new Response(indexHtml, {
-          headers: { 
-            'Content-Type': 'text/html',
-            'Access-Control-Allow-Origin': '*'
-          }
-        });
-      }
-    }
-    
-    return new Response('Not Found', { 
-      status: 404,
-      headers: { 'Content-Type': 'text/plain' }
-    });
   }
+
+  return assetResponse;
 }
 
 export default {
