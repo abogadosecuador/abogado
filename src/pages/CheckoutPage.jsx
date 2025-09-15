@@ -57,7 +57,7 @@ const CheckoutPage = () => {
   useEffect(() => {
     if (cart.length === 0) {
       toast.error('No hay productos en el carrito');
-      navigate('/servicios');
+      navigate('/catalogo');
     }
   }, [cart, navigate]);
   
@@ -248,8 +248,8 @@ const CheckoutPage = () => {
                       id="paypal"
                       name="payment-method"
                       type="radio"
-                      checked={paymentMethod === 'paypal'}
-                      onChange={() => setPaymentMethod('paypal')}
+                      checked={true}
+                      readOnly
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                     />
                     <label htmlFor="paypal" className="ml-3 block text-sm font-medium text-gray-700">
@@ -257,46 +257,9 @@ const CheckoutPage = () => {
                     </label>
                     <img src="/images/paypal.png" alt="PayPal" className="h-8 ml-auto" />
                   </div>
-                  
-                  <div className="flex items-center">
-                    <input
-                      id="bank-transfer"
-                      name="payment-method"
-                      type="radio"
-                      checked={paymentMethod === 'bank-transfer'}
-                      onChange={() => setPaymentMethod('bank-transfer')}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    />
-                    <label htmlFor="bank-transfer" className="ml-3 block text-sm font-medium text-gray-700">
-                      Transferencia Bancaria
-                    </label>
-                  </div>
                 </div>
                 
-                {paymentMethod === 'bank-transfer' && (
-                  <div className="mt-4 p-4 bg-gray-50 rounded-md border border-gray-200">
-                    <h3 className="text-md font-medium text-gray-800 mb-2">Datos Bancarios:</h3>
-                    <p className="text-sm text-gray-700">Banco Pichincha</p>
-                    <p className="text-sm text-gray-700">Cuenta Corriente: 2203728320</p>
-                    <p className="text-sm text-gray-700">Titular: Wilson Alexander Ipiales Guerron</p>
-                    <p className="text-sm text-gray-700">CI: 1003385786</p>
-                    <p className="text-sm text-gray-500 mt-2">
-                      Al seleccionar este método, recibirá instrucciones para completar su pago.
-                    </p>
-                    
-                    <button
-                      onClick={handleBankTransfer}
-                      disabled={loading}
-                      className="mt-4 w-full px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
-                    >
-                      {loading ? 'Procesando...' : 'Continuar con Transferencia Bancaria'}
-                    </button>
-                  </div>
-                )}
-                
-                {paymentMethod === 'paypal' && (
-                  <PayPalButton amount={getCartTotal().toFixed(2)} />
-                )}
+                <PayPalButton amount={Number(getCartTotal().toFixed(2))} />
               </div>
             </motion.div>
             

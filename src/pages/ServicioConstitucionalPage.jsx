@@ -148,7 +148,9 @@ const ServicioConstitucionalPage = () => {
                 <h3 className="text-xl font-bold mb-2">{service.title}</h3>
                 <p className="text-gray-600 mb-4 text-sm">{service.description}</p>
                 <div className="mb-4">
-                  <span className="text-3xl font-bold text-gray-900">${'{'}service.price{'}'}</span>
+                  <span className="text-3xl font-bold text-gray-900">
+                    {new Intl.NumberFormat('es-EC', { style: 'currency', currency: 'USD' }).format(service.price)}
+                  </span>
                 </div>
                 <ul className="space-y-2 mb-6">
                   {service.features.map((feature, idx) => (

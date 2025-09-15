@@ -9,6 +9,25 @@ import { createClient } from '@supabase/supabase-js';
 import { config } from '../config';
 
 let supabaseClientInstance = null;
+let isInitializing = false; // evitar ReferenceError y carreras de inicialización
+
+// Utilidades de entorno seguras
+const isProduction = (() => {
+  try {
+    if (typeof import.meta !== 'undefined' && import.meta.env && 'PROD' in import.meta.env) return !!import.meta.env.PROD;
+    if (typeof process !== 'undefined' && process.env) return process.env.NODE_ENV === 'production';
+    if (typeof window !== 'undefined') return window.location.hostname !== 'localhost';
+  } catch (e) {}
+  return false;
+})();
+
+const getBaseUrl = () => {
+  try {
+    return (config?.app?.url) || (typeof window !== 'undefined' ? window.location.origin : '') || '';
+  } catch (e) {
+    return typeof window !== 'undefined' ? window.location.origin : '';
+  }
+};
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || config.supabase.url;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || config.supabase.anonKey;
