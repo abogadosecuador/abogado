@@ -1,3 +1,10 @@
+        case 'cloudinary': {
+          // GET /api/cloudinary/list?prefix=&max_results=50
+          if (method === 'GET' && (id === 'list' || !id)) {
+            return await this.cloudinaryList(request);
+          }
+          return this.methodNotAllowed();
+        }
 /**
  * API Router - Main routing logic
  */
@@ -46,6 +53,39 @@ export class APIRouter {
     this.userContentHandler = new UserContentHandler(env, this.supabase);
     this.aiConsultationHandler = new AiConsultationHandler(env, this.supabase);
     this.bankTransferHandler = new BankTransferHandler(env, this.supabase);
+  }
+
+  async cloudinaryList(request) {
+    try {
+      const url = new URL(request.url);
+      const prefix = url.searchParams.get('prefix') || '';
+      const max = Number(url.searchParams.get('max_results') || '50');
+      const cloudName = this.env.CLOUDINARY_CLOUD_NAME;
+      const apiKey = this.env.CLOUDINARY_API_KEY;
+      const apiSecret = this.env.CLOUDINARY_API_SECRET;
+      if (!cloudName || !apiKey || !apiSecret) {
+        return this.error('Missing Cloudinary credentials', 500);
+      }
+      const auth = 'Basic ' + btoa(`${apiKey}:${apiSecret}`);
+      const apiUrl = `https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/resources/image` + (prefix ? `?prefix=${encodeURIComponent(prefix)}&max_results=${max}` : `?max_results=${max}`);
+      const res = await fetch(apiUrl, { headers: { Authorization: auth } });
+      const json = await res.json();
+      if (!res.ok) {
+        return this.error(json?.error?.message || 'Cloudinary error', 500);
+      }
+      const items = Array.isArray(json?.resources) ? json.resources.map(r => ({
+        public_id: r.public_id,
+        format: r.format,
+        url: r.secure_url,
+        bytes: r.bytes,
+        width: r.width,
+        height: r.height,
+        created_at: r.created_at,
+      })) : [];
+      return this.success(items);
+    } catch (e) {
+      return this.error(e.message || 'Cloudinary list error', 500);
+    }
   }
 
   async route(request, pathname) {

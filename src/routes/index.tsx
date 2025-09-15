@@ -1,40 +1,47 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-// Componentes de carga lazu00ed
-const Home = React.lazy(() => import('../pages/Home'));
-const About = React.lazy(() => import('../pages/About'));
-const Services = React.lazy(() => import('../pages/Services'));
-const Contact = React.lazy(() => import('../pages/Contact'));
-const Login = React.lazy(() => import('../pages/Login'));
-const Register = React.lazy(() => import('../pages/Register'));
-const Dashboard = React.lazy(() => import('../pages/Dashboard'));
-const NotFound = React.lazy(() => import('../pages/NotFound'));
+// Componentes lazy existentes en src/pages
+const HomePage = React.lazy(() => import('../pages/HomePage'));
+const AboutPage = React.lazy(() => import('../pages/AboutPage'));
+const ServicesPage = React.lazy(() => import('../pages/ServicesPage'));
+const ContactPage = React.lazy(() => import('../pages/ContactPage'));
+const LoginPage = React.lazy(() => import('../pages/LoginPage'));
+const RegisterPage = React.lazy(() => import('../pages/RegisterPage'));
+const DashboardPage = React.lazy(() => import('../pages/DashboardPage'));
+const Blog = React.lazy(() => import('../pages/Blog'));
+const CatalogPage = React.lazy(() => import('../pages/CatalogPage'));
 
-// Layout y componentes de carga
-const Layout = React.lazy(() => import('../components/Layout'));
+// Fallback genérico
 const Loading = () => <div className="loading-spinner">Cargando...</div>;
+
+// Layout público unificado
+const PublicLayout = React.lazy(() => import('../layouts/PublicLayout'));
 
 const AppRoutes: React.FC = () => {
   return (
     <Router>
       <React.Suspense fallback={<Loading />}>
         <Routes>
-          {/* Rutas pu00fablicas */}
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="sobre-mi" element={<About />} />
-            <Route path="servicios" element={<Services />} />
-            <Route path="contacto" element={<Contact />} />
-            <Route path="login" element={<Login />} />
-            <Route path="registro" element={<Register />} />
+          {/* Rutas públicas */}
+          <Route path="/" element={<PublicLayout />}> 
+            <Route index element={<HomePage />} />
+            <Route path="sobre-nosotros" element={<AboutPage />} />
+            <Route path="servicios" element={<ServicesPage />} />
+            <Route path="contact" element={<ContactPage />} />
+            {/* Alias para compatibilidad */}
+            <Route path="contacto" element={<ContactPage />} />
+            <Route path="login" element={<LoginPage />} />
+            <Route path="registro" element={<RegisterPage />} />
+            <Route path="blog" element={<Blog />} />
+            <Route path="catalogo" element={<CatalogPage />} />
           </Route>
-          
-          {/* Rutas privadas */}
-          <Route path="/dashboard/*" element={<Dashboard />} />
-          
-          {/* Rutas de error */}
-          <Route path="*" element={<NotFound />} />
+
+          {/* Rutas privadas (si requieren layout propio, se puede ajustar) */}
+          <Route path="/dashboard/*" element={<DashboardPage />} />
+
+          {/* 404 genérico: reutilizamos HomePage o una NotFound si existe */}
+          <Route path="*" element={<HomePage />} />
         </Routes>
       </React.Suspense>
     </Router>

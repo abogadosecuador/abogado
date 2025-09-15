@@ -6,7 +6,7 @@ import { useCart } from '../context/CartContext';
 
 const MotionDiv = motion.div as any;
 
-const ProductCard = ({ item, type }) => {
+const ProductCard = ({ item, type, onClick }: { item: any, type: string, onClick?: () => void }) => {
     const { addToCart } = useCart();
     const isService = type === 'services';
     const isCourse = type === 'courses';
@@ -41,8 +41,8 @@ const ProductCard = ({ item, type }) => {
             className="h-full"
         >
             <Card className="flex flex-col h-full !p-0 overflow-hidden">
-                <div className="relative">
-                    <img src={imageUrl} alt={title} className="w-full h-48 object-cover" />
+                <div className="relative cursor-pointer" onClick={onClick}>
+                    <img src={imageUrl} alt={title} className="w-full h-48 object-cover" loading="lazy" />
                     <div className="absolute top-2 right-2 flex items-center gap-2 text-xs font-semibold px-2 py-1 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-full">
                         <Icon className="h-4 w-4 text-purple-500" />
                         <span>{typeLabel}</span>

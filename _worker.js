@@ -33,7 +33,8 @@ async function handleRequest(request, env) {
   
   // Handle static assets
   const assetPath = ASSET_MANIFEST[path] || path;
-  const assetUrl = new URL(assetPath, 'https://abogadosecuador.workers.dev');
+  const baseOrigin = env.APP_URL || (new URL(request.url)).origin;
+  const assetUrl = new URL(assetPath, baseOrigin);
   
   try {
     // Try to get from KV store first
