@@ -9,6 +9,7 @@ const navigation = [
   { name: 'Inicio', href: '/', current: true, icon: <FaHome className="mr-1" /> },
   { name: 'Sobre nosotros', href: '/sobre-nosotros', current: false, icon: <FaUser className="mr-1" /> },
   { name: 'Servicios', href: '/servicios', current: false, icon: <FaGavel className="mr-1" /> },
+  { name: 'Tienda', href: '/catalogo', current: false, icon: <FaBook className="mr-1" /> },
   { name: 'Consultas', href: '/consultas', current: false, icon: <FaUser className="mr-1" /> },
   { name: 'Blog', href: '/blog', current: false, icon: <FaNewspaper className="mr-1" /> },
   { name: 'Noticias', href: '/noticias', current: false, icon: <FaBook className="mr-1" /> },
