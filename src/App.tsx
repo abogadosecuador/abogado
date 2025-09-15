@@ -108,12 +108,14 @@ function App() {
           <Route path="consultations/digital" element={<DigitalConsultationPage />} />
           <Route path="plans" element={<PlansPage />} />
           <Route path="about" element={<AboutPage />} />
+          <Route path="sobre-nosotros" element={<AboutPage />} />
           <Route path="blog" element={<BlogPage />} />
           <Route path="blog/:id" element={<BlogPostPage />} />
           <Route path="privacy" element={<PrivacyPolicyPage />} />
           <Route path="terms" element={<TermsOfServicePage />} />
           <Route path="products" element={<ProductsPage />} />
           <Route path="catalog" element={<CatalogPage />} />
+          <Route path="catalogo" element={<CatalogPage />} />
           <Route path="courses" element={<CoursesPage />} />
           <Route path="courses/:id" element={<CourseDetailPage />} />
         </Route>
