@@ -25,6 +25,50 @@ class DiagnosticSystem {
     };
   }
 
+  async paymentsHasAccess(request) {
+    try {
+      const authHeader = request.headers.get('Authorization') || '';
+      const token = authHeader.replace('Bearer ', '');
+      if (!token) {
+        return new Response(JSON.stringify({ access: false, error: 'No token' }), { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+      }
+      const url = new URL(request.url);
+      const product = url.searchParams.get('product') || null;
+
+      // Obtener usuario desde Supabase con el token
+      const supabaseUrl = 'https://kbybhgxqdefuquybstqk.supabase.co';
+      const anon = this.env.SUPABASE_ANON_KEY || '';
+      const userResp = await fetch(`${supabaseUrl}/auth/v1/user`, {
+        headers: { 'apikey': anon, 'Authorization': `Bearer ${token}` }
+      });
+      if (!userResp.ok) {
+        return new Response(JSON.stringify({ access: false }), { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+      }
+      const user = await userResp.json();
+      const email = user?.email || user?.user_metadata?.email || null;
+      const uid = user?.id || null;
+
+      if (!email && !uid) {
+        return new Response(JSON.stringify({ access: false }), { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+      }
+
+      // Consultar órdenes con estado exitoso
+      let query = `SELECT 1 FROM orders WHERE status IN ('COMPLETED','APPROVED','CAPTURED') AND (user_email = ? OR user_id = ?)`;
+      const binds = [email, uid];
+      if (product) {
+        query += ` AND (product_slug = ? OR description LIKE ?) `;
+        binds.push(product, `%${product}%`);
+      }
+      query += ' LIMIT 1';
+
+      const row = await this.env.ABOGADO_WILSON_DB.prepare(query).bind(...binds).first();
+      const access = !!row;
+      return new Response(JSON.stringify({ access }), { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+    } catch (e) {
+      return new Response(JSON.stringify({ access: false, error: e.message }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+    }
+  }
+
   // -------------------- Status --------------------
   handleStatus() {
     return new Response(JSON.stringify({ ok: true, timestamp: new Date().toISOString() }), { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders }});
@@ -67,6 +111,23 @@ class DiagnosticSystem {
           created_at TEXT
         );`
       ).run();
+
+      // Extender esquema de orders con columnas para asociación de usuario/producto (si no existen)
+      try {
+        const info = await this.env.ABOGADO_WILSON_DB.prepare(`PRAGMA table_info(orders)`).all();
+        const cols = (info?.results || []).map(c => c.name);
+        if (!cols.includes('user_email')) {
+          await this.env.ABOGADO_WILSON_DB.prepare(`ALTER TABLE orders ADD COLUMN user_email TEXT`).run();
+        }
+        if (!cols.includes('user_id')) {
+          await this.env.ABOGADO_WILSON_DB.prepare(`ALTER TABLE orders ADD COLUMN user_id TEXT`).run();
+        }
+        if (!cols.includes('product_slug')) {
+          await this.env.ABOGADO_WILSON_DB.prepare(`ALTER TABLE orders ADD COLUMN product_slug TEXT`).run();
+        }
+      } catch (e) {
+        // Ignorar errores de ALTER si el proveedor no soporta o ya existen
+      }
 
       // Newsletter subscriptions
       await this.env.ABOGADO_WILSON_DB.prepare(
@@ -360,6 +421,8 @@ class APIHandler {
           return this.capturePayPalOrder(request);
         case 'payments/webhook':
           return this.payPalWebhook(request);
+        case 'payments/has-access':
+          return this.paymentsHasAccess(request);
         // Auth endpoints (proxy to Supabase Auth REST)
         case 'auth/register':
           return this.authRegister(request);
@@ -585,7 +648,7 @@ class APIHandler {
 
   async capturePayPalOrder(request) {
     const body = await request.json();
-    const { orderId } = body || {};
+    const { orderId, userEmail, userId, productSlug } = body || {};
     if (!orderId) {
       return new Response(JSON.stringify({ error: 'orderId is required' }), { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
     }
@@ -611,8 +674,8 @@ class APIHandler {
       const description = purchase?.description || null;
       const status = data?.status || purchase?.payments?.captures?.[0]?.status || 'UNKNOWN';
       await this.env.ABOGADO_WILSON_DB.prepare(
-        'INSERT INTO orders (order_id, status, amount, description, created_at) VALUES (?, ?, ?, ?, ?)'
-      ).bind(orderId, status, amount ? Number(amount) : null, description, new Date().toISOString()).run();
+        'INSERT INTO orders (order_id, status, amount, description, created_at, user_email, user_id, product_slug) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+      ).bind(orderId, status, amount ? Number(amount) : null, description, new Date().toISOString(), userEmail || null, userId || null, productSlug || null).run();
     } catch (e) {
       // swallow to not break response
       console.warn('Failed to persist PayPal order:', e?.message);
@@ -688,9 +751,10 @@ class APIHandler {
         const orderId = resource?.id || resource?.supplementary_data?.related_ids?.order_id || null;
         const amount = resource?.amount?.value || null;
         const status = resource?.status || 'COMPLETED';
+        const userEmail = resource?.payer?.email_address || null;
         await this.env.ABOGADO_WILSON_DB.prepare(
-          'INSERT INTO orders (order_id, status, amount, description, created_at) VALUES (?, ?, ?, ?, ?)'
-        ).bind(orderId, status, amount ? Number(amount) : null, 'Webhook', new Date().toISOString()).run();
+          'INSERT INTO orders (order_id, status, amount, description, created_at, user_email) VALUES (?, ?, ?, ?, ?, ?)'
+        ).bind(orderId, status, amount ? Number(amount) : null, 'Webhook', new Date().toISOString(), userEmail).run();
       }
       return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
     } catch (e) {

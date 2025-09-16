@@ -20,7 +20,7 @@ const Footer = () => {
       email: newsletterEmail,
       name: newsletterName
     });
-    setSubmitting(false); implementado lo lisyo desplegar con todo todo list completo 
+    setSubmitting(false);
     if (error) {
       alert('No se pudo suscribir. Intente nuevamente.');
       return;
