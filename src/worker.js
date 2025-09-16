@@ -25,6 +25,191 @@ class DiagnosticSystem {
     };
   }
 
+  // -------------------- Status --------------------
+  handleStatus() {
+    return new Response(JSON.stringify({ ok: true, timestamp: new Date().toISOString() }), { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders }});
+  }
+
+  // -------------------- Setup (D1) --------------------
+  async setupInit() {
+    try {
+      // Contacts table
+      await this.env.ABOGADO_WILSON_DB.prepare(
+        `CREATE TABLE IF NOT EXISTS contacts (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT,
+          email TEXT,
+          phone TEXT,
+          message TEXT,
+          created_at TEXT
+        );`
+      ).run();
+
+      // Searches table
+      await this.env.ABOGADO_WILSON_DB.prepare(
+        `CREATE TABLE IF NOT EXISTS searches (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          search_type TEXT NOT NULL,
+          search_value TEXT NOT NULL,
+          province TEXT NOT NULL,
+          timestamp TEXT NOT NULL
+        );`
+      ).run();
+
+      // Orders table (opcional para pagos)
+      await this.env.ABOGADO_WILSON_DB.prepare(
+        `CREATE TABLE IF NOT EXISTS orders (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          order_id TEXT,
+          status TEXT,
+          amount REAL,
+          description TEXT,
+          created_at TEXT
+        );`
+      ).run();
+
+      // Newsletter subscriptions
+      await this.env.ABOGADO_WILSON_DB.prepare(
+        `CREATE TABLE IF NOT EXISTS newsletter_subscriptions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          email TEXT NOT NULL,
+          name TEXT,
+          created_at TEXT
+        );`
+      ).run();
+
+      // Products
+      await this.env.ABOGADO_WILSON_DB.prepare(
+        `CREATE TABLE IF NOT EXISTS products (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          slug TEXT UNIQUE,
+          description TEXT,
+          price REAL NOT NULL,
+          status TEXT DEFAULT 'active',
+          image_url TEXT,
+          created_at TEXT
+        );`
+      ).run();
+
+      // Services
+      await this.env.ABOGADO_WILSON_DB.prepare(
+        `CREATE TABLE IF NOT EXISTS services (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          slug TEXT UNIQUE,
+          description TEXT,
+          price REAL,
+          duration INTEGER,
+          status TEXT DEFAULT 'active',
+          created_at TEXT
+        );`
+      ).run();
+
+      // Courses
+      await this.env.ABOGADO_WILSON_DB.prepare(
+        `CREATE TABLE IF NOT EXISTS courses (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          slug TEXT UNIQUE,
+          summary TEXT,
+          price REAL,
+          status TEXT DEFAULT 'draft',
+          created_at TEXT
+        );`
+      ).run();
+
+      // Consultations
+      await this.env.ABOGADO_WILSON_DB.prepare(
+        `CREATE TABLE IF NOT EXISTS consultations (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          customer_name TEXT,
+          type TEXT,
+          date_time TEXT,
+          modality TEXT,
+          notes TEXT,
+          status TEXT DEFAULT 'pending',
+          created_at TEXT
+        );`
+      ).run();
+
+      // Blog posts
+      await this.env.ABOGADO_WILSON_DB.prepare(
+        `CREATE TABLE IF NOT EXISTS blog_posts (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          slug TEXT UNIQUE,
+          excerpt TEXT,
+          content TEXT,
+          author TEXT,
+          published_at TEXT,
+          status TEXT DEFAULT 'draft',
+          created_at TEXT
+        );`
+      ).run();
+
+      // Ebooks
+      await this.env.ABOGADO_WILSON_DB.prepare(
+        `CREATE TABLE IF NOT EXISTS ebooks (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          slug TEXT UNIQUE,
+          description TEXT,
+          price REAL,
+          file_url TEXT,
+          status TEXT DEFAULT 'active',
+          created_at TEXT
+        );`
+      ).run();
+
+      return new Response(JSON.stringify({ success: true, message: 'D1 tables ensured' }), { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders }});
+    } catch (e) {
+      return new Response(JSON.stringify({ success: false, error: e.message }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders }});
+    }
+  }
+
+  // -------------------- Auth (Supabase REST) --------------------
+  async authRegister(request) {
+    const body = await request.json();
+    const supabaseUrl = 'https://kbybhgxqdefuquybstqk.supabase.co';
+    const anon = this.env.SUPABASE_ANON_KEY || '';
+    const resp = await fetch(`${supabaseUrl}/auth/v1/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': anon, 'Authorization': `Bearer ${anon}` },
+      body: JSON.stringify({ email: body.email, password: body.password, data: { full_name: body.name || '' } })
+    });
+    const data = await resp.json();
+    return new Response(JSON.stringify(data), { status: resp.status, headers: { 'Content-Type': 'application/json', ...corsHeaders }});
+  }
+
+  async authLogin(request) {
+    const body = await request.json();
+    const supabaseUrl = 'https://kbybhgxqdefuquybstqk.supabase.co';
+    const anon = this.env.SUPABASE_ANON_KEY || '';
+    const resp = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': anon, 'Authorization': `Bearer ${anon}` },
+      body: JSON.stringify({ email: body.email, password: body.password })
+    });
+    const data = await resp.json();
+    return new Response(JSON.stringify(data), { status: resp.status, headers: { 'Content-Type': 'application/json', ...corsHeaders }});
+  }
+
+  async authGetUser(request) {
+    const authHeader = request.headers.get('Authorization') || '';
+    const token = authHeader.replace('Bearer ', '');
+    if (!token) {
+      return new Response(JSON.stringify({ error: 'No token' }), { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+    }
+    const supabaseUrl = 'https://kbybhgxqdefuquybstqk.supabase.co';
+    const anon = this.env.SUPABASE_ANON_KEY || '';
+    const resp = await fetch(`${supabaseUrl}/auth/v1/user`, {
+      headers: { 'apikey': anon, 'Authorization': `Bearer ${token}` }
+    });
+    const data = await resp.json();
+    return new Response(JSON.stringify(data), { status: resp.status, headers: { 'Content-Type': 'application/json', ...corsHeaders }});
+  }
+
   async logRequest(request, response, duration) {
     this.metrics.requests++;
     
@@ -154,19 +339,47 @@ class APIHandler {
           return this.healthCheck();
         case 'metrics':
           return this.getMetrics();
+        // Setup D1 tables
+        case 'setup/init':
+          return this.setupInit();
+        case 'setup/seed':
+          return this.seedDemoData();
+        case 'status':
+          return this.handleStatus();
         case 'supabase':
           return this.proxySupabase(request);
         case 'cloudinary/upload':
           return this.handleCloudinaryUpload(request);
+        case 'upload':
+          return this.handleCloudinaryUpload(request);
         case 'paypal/create-order':
           return this.createPayPalOrder(request);
+        case 'payments/create-order':
+          return this.createPayPalOrder(request);
+        case 'payments/capture':
+          return this.capturePayPalOrder(request);
+        case 'payments/webhook':
+          return this.payPalWebhook(request);
+        // Auth endpoints (proxy to Supabase Auth REST)
+        case 'auth/register':
+          return this.authRegister(request);
+        case 'auth/login':
+          return this.authLogin(request);
+        case 'auth/user':
+          return this.authGetUser(request);
         case 'contact':
           return this.handleContact(request);
         case 'whatsapp':
           return this.sendWhatsApp(request);
         case 'data/searches':
           return this.handleSearches(request);
+        case 'data/judicial_processes/search':
+          return this.handleJudicialProcessesSearch(request);
         default:
+          // Rutas genéricas de datos: data/:resource y data/:resource/:id
+          if (endpoint.startsWith('data/')) {
+            return this.handleData(request, endpoint.substring('data/'.length));
+          }
           return this.notFound();
       }
     } catch (error) {
@@ -238,6 +451,48 @@ class APIHandler {
         ...corsHeaders
       }
     });
+  }
+
+  async setupInit() {
+    return this.diagnostic.setupInit();
+  }
+
+  async seedDemoData() {
+    try {
+      // Products
+      await this.env.ABOGADO_WILSON_DB.prepare(
+        'INSERT INTO products (name, slug, description, price, status, image_url, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      ).bind('Demo Product', 'demo-product', 'This is a demo product', 19.99, 'active', 'https://example.com/image.jpg', new Date().toISOString()).run();
+
+      // Services
+      await this.env.ABOGADO_WILSON_DB.prepare(
+        'INSERT INTO services (name, slug, description, price, duration, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      ).bind('Demo Service', 'demo-service', 'This is a demo service', 9.99, 30, 'active', new Date().toISOString()).run();
+
+      // Courses
+      await this.env.ABOGADO_WILSON_DB.prepare(
+        'INSERT INTO courses (title, slug, summary, price, status, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+      ).bind('Demo Course', 'demo-course', 'This is a demo course', 29.99, 'draft', new Date().toISOString()).run();
+
+      // Consultations
+      await this.env.ABOGADO_WILSON_DB.prepare(
+        'INSERT INTO consultations (customer_name, type, date_time, modality, notes, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      ).bind('John Doe', 'Demo Consultation', '2023-03-01 10:00:00', 'Phone', 'Demo notes', 'pending', new Date().toISOString()).run();
+
+      // Blog posts
+      await this.env.ABOGADO_WILSON_DB.prepare(
+        'INSERT INTO blog_posts (title, slug, excerpt, content, author, published_at, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+      ).bind('Demo Blog Post', 'demo-blog-post', 'This is a demo blog post', 'Demo content', 'John Doe', new Date().toISOString(), 'draft', new Date().toISOString()).run();
+
+      // Ebooks
+      await this.env.ABOGADO_WILSON_DB.prepare(
+        'INSERT INTO ebooks (title, slug, description, price, file_url, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      ).bind('Demo Ebook', 'demo-ebook', 'This is a demo ebook', 9.99, 'https://example.com/ebook.pdf', 'active', new Date().toISOString()).run();
+
+      return new Response(JSON.stringify({ success: true, message: 'Demo data seeded successfully' }), { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+    } catch (e) {
+      return new Response(JSON.stringify({ success: false, error: e.message }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+    }
   }
 
   async proxySupabase(request) {
@@ -328,6 +583,121 @@ class APIHandler {
     });
   }
 
+  async capturePayPalOrder(request) {
+    const body = await request.json();
+    const { orderId } = body || {};
+    if (!orderId) {
+      return new Response(JSON.stringify({ error: 'orderId is required' }), { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+    }
+
+    const clientId = this.env.PAYPAL_CLIENT_ID || '';
+    const clientSecret = this.env.PAYPAL_CLIENT_SECRET || '';
+    const auth = btoa(`${clientId}:${clientSecret}`);
+
+    const response = await fetch(`https://api-m.paypal.com/v2/checkout/orders/${orderId}/capture`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${auth}`
+      }
+    });
+
+    const data = await response.json();
+
+    // Persist order in D1 if possible
+    try {
+      const purchase = data?.purchase_units?.[0];
+      const amount = purchase?.payments?.captures?.[0]?.amount?.value || purchase?.amount?.value || null;
+      const description = purchase?.description || null;
+      const status = data?.status || purchase?.payments?.captures?.[0]?.status || 'UNKNOWN';
+      await this.env.ABOGADO_WILSON_DB.prepare(
+        'INSERT INTO orders (order_id, status, amount, description, created_at) VALUES (?, ?, ?, ?, ?)'
+      ).bind(orderId, status, amount ? Number(amount) : null, description, new Date().toISOString()).run();
+    } catch (e) {
+      // swallow to not break response
+      console.warn('Failed to persist PayPal order:', e?.message);
+    }
+
+    return new Response(JSON.stringify(data), {
+      status: response.status,
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
+    });
+  }
+
+  async payPalWebhook(request) {
+    // Verify signature using PayPal API before persisting
+    try {
+      const rawBody = await request.text();
+      const transmissionId = request.headers.get('paypal-transmission-id');
+      const transmissionTime = request.headers.get('paypal-transmission-time');
+      const certUrl = request.headers.get('paypal-cert-url');
+      const authAlg = request.headers.get('paypal-auth-algo');
+      const transmissionSig = request.headers.get('paypal-transmission-sig');
+      const webhookId = this.env.PAYPAL_WEBHOOK_ID || '';
+      if (!webhookId) {
+        return new Response(JSON.stringify({ success: false, error: 'Missing PAYPAL_WEBHOOK_ID' }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+      }
+
+      const clientId = this.env.PAYPAL_CLIENT_ID || '';
+      const clientSecret = this.env.PAYPAL_CLIENT_SECRET || '';
+      const basic = btoa(`${clientId}:${clientSecret}`);
+
+      // Get access token
+      const authResp = await fetch('https://api-m.paypal.com/v1/oauth2/token', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${basic}`,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'grant_type=client_credentials'
+      });
+      const authData = await authResp.json();
+      const accessToken = authData.access_token;
+      if (!accessToken) {
+        return new Response(JSON.stringify({ success: false, error: 'Unable to obtain PayPal token' }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+      }
+
+      const verifyResp = await fetch('https://api-m.paypal.com/v1/notifications/verify-webhook-signature', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          transmission_id: transmissionId,
+          transmission_time: transmissionTime,
+          cert_url: certUrl,
+          auth_algo: authAlg,
+          transmission_sig: transmissionSig,
+          webhook_id: webhookId,
+          webhook_event: JSON.parse(rawBody)
+        })
+      });
+      const verifyData = await verifyResp.json();
+      if (verifyData?.verification_status !== 'SUCCESS') {
+        return new Response(JSON.stringify({ success: false, error: 'Signature verification failed' }), { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+      }
+
+      const event = JSON.parse(rawBody);
+      const eventType = event?.event_type || event?.eventType;
+      if (eventType === 'PAYMENT.CAPTURE.COMPLETED' || eventType === 'CHECKOUT.ORDER.APPROVED') {
+        const resource = event?.resource || {};
+        const orderId = resource?.id || resource?.supplementary_data?.related_ids?.order_id || null;
+        const amount = resource?.amount?.value || null;
+        const status = resource?.status || 'COMPLETED';
+        await this.env.ABOGADO_WILSON_DB.prepare(
+          'INSERT INTO orders (order_id, status, amount, description, created_at) VALUES (?, ?, ?, ?, ?)'
+        ).bind(orderId, status, amount ? Number(amount) : null, 'Webhook', new Date().toISOString()).run();
+      }
+      return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+    } catch (e) {
+      return new Response(JSON.stringify({ success: false, error: e.message }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+    }
+  }
+
   async handleContact(request) {
     const body = await request.json();
     
@@ -410,6 +780,60 @@ class APIHandler {
         ...corsHeaders
       }
     });
+  }
+
+  async handleSearches(request) {
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: corsHeaders });
+    }
+
+    try {
+      if (request.method === 'GET') {
+        // Obtener últimas 10 búsquedas desde D1 si existe la tabla
+        try {
+          const rows = await this.env.ABOGADO_WILSON_DB.prepare(
+            'SELECT id, search_type, search_value, province, timestamp FROM searches ORDER BY timestamp DESC LIMIT 10'
+          ).all();
+          return new Response(JSON.stringify(rows?.results || []), { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+        } catch (e) {
+          // Fallback a KV si D1 no disponible
+          const list = await this.env.ABOGADO_WILSON_KV.list({ prefix: 'search:' });
+          const items = [];
+          for (const key of list.keys.slice(-10)) {
+            const val = await this.env.ABOGADO_WILSON_KV.get(key.name);
+            if (val) items.push(JSON.parse(val));
+          }
+          items.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+          return new Response(JSON.stringify(items), { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+        }
+      }
+
+      if (request.method === 'POST') {
+        const body = await request.json();
+        const record = {
+          search_type: body.search_type,
+          search_value: body.search_value,
+          province: body.province,
+          timestamp: body.timestamp || new Date().toISOString()
+        };
+
+        // Intentar guardar en D1
+        try {
+          await this.env.ABOGADO_WILSON_DB.prepare(
+            'INSERT INTO searches (search_type, search_value, province, timestamp) VALUES (?, ?, ?, ?)'
+          ).bind(record.search_type, record.search_value, record.province, record.timestamp).run();
+        } catch (e) {
+          // Guardar en KV como respaldo
+          await this.env.ABOGADO_WILSON_KV.put(`search:${Date.now()}`, JSON.stringify(record), { expirationTtl: 86400 * 30 });
+        }
+
+        return new Response(JSON.stringify({ success: true }), { status: 201, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+      }
+
+      return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+    } catch (error) {
+      return new Response(JSON.stringify({ error: 'Internal error', message: error.message }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+    }
   }
 }
 

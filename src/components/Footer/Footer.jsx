@@ -1,9 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaPhoneAlt, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa';
+import { dataService } from '../../services/apiService';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterName, setNewsletterName] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleNewsletterSubmit = async (e) => {
+    e.preventDefault();
+    if (!newsletterEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newsletterEmail)) {
+      alert('Ingrese un correo válido.');
+      return;
+    }
+    setSubmitting(true);
+    const { error } = await dataService.create('newsletter_subscriptions', {
+      email: newsletterEmail,
+      name: newsletterName
+    });
+    setSubmitting(false); implementado lo lisyo desplegar con todo todo list completo 
+    if (error) {
+      alert('No se pudo suscribir. Intente nuevamente.');
+      return;
+    }
+    alert('¡Suscripción realizada con éxito!');
+    setNewsletterEmail('');
+    setNewsletterName('');
+  };
 
   return (
     <footer className="bg-gray-900 text-gray-100 pt-16 pb-8">
@@ -22,7 +47,7 @@ const Footer = () => {
                 <a href="tel:+593988835269" className="hover:text-blue-400 transition-colors">
                   +593 988 835 269
                 </a>
-              </li>
+              </li> 
               <li className="flex items-center">
                 <FaEnvelope className="text-blue-400 mr-3 flex-shrink-0" />
                 <a href="mailto:alexip2@hotmail.com" className="hover:text-blue-400 transition-colors">
@@ -83,17 +108,28 @@ const Footer = () => {
           <div>
             <h3 className="text-xl font-bold mb-4 text-white border-b border-blue-500 pb-2">Suscríbete</h3>
             <p className="mb-4">Recibe noticias legales y actualizaciones importantes directamente en tu correo electrónico.</p>
-            <form className="flex flex-col space-y-2">
+            <form className="flex flex-col space-y-2" onSubmit={handleNewsletterSubmit}>
+              <input
+                type="text"
+                placeholder="Tu nombre (opcional)"
+                value={newsletterName}
+                onChange={(e)=>setNewsletterName(e.target.value)}
+                className="px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 border border-gray-700"
+              />
               <input 
                 type="email" 
                 placeholder="Tu correo electrónico" 
+                value={newsletterEmail}
+                onChange={(e)=>setNewsletterEmail(e.target.value)}
                 className="px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 border border-gray-700" 
+                required
               />
               <button 
                 type="submit" 
-                className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-colors"
+                disabled={submitting}
+                className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white py-2 px-4 rounded-md transition-colors"
               >
-                Suscribirse
+                {submitting ? 'Enviando...' : 'Suscribirse'}
               </button>
             </form>
             <div className="flex mt-4 space-x-3">

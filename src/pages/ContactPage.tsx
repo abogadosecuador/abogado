@@ -1,10 +1,38 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Card from '../components/Card';
 import { PhoneCallIcon, EmailIcon, BranchIcon } from '../components/icons/InterfaceIcons';
+import { dataService } from '../services/apiService';
 
 const ContactPage: React.FC = () => {
     const primaryBgClass = "bg-[hsl(var(--accent-hue)_var(--accent-saturation)_var(--accent-lightness))]";
     const primaryHoverBgClass = "hover:opacity-90";
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [message, setMessage] = useState('');
+    const [phone, setPhone] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!name.trim() || !email.trim() || !message.trim()) {
+            alert('Por favor complete nombre, email y mensaje.');
+            return;
+        }
+        setSubmitting(true);
+        const { data, error } = await dataService.create('contacts', {
+            name,
+            email,
+            phone,
+            message,
+        });
+        setSubmitting(false);
+        if (error) {
+            alert('No se pudo enviar el mensaje. Intente nuevamente.');
+            return;
+        }
+        alert('Mensaje enviado correctamente. ¡Gracias por contactarnos!');
+        setName(''); setEmail(''); setMessage(''); setPhone('');
+    };
     
     return (
         <div className="py-12 lg:py-20 bg-gray-50 dark:bg-gray-900">
@@ -40,22 +68,26 @@ const ContactPage: React.FC = () => {
                     
                     <Card>
                         <h2 className="text-2xl font-bold mb-4">Envíenos un Mensaje</h2>
-                        <form className="space-y-4">
+                        <form className="space-y-4" onSubmit={handleSubmit}>
                             <div>
                                 <label htmlFor="name" className="sr-only">Nombre</label>
-                                <input type="text" id="name" placeholder="Su Nombre" className="w-full p-3 rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600"/>
+                                <input value={name} onChange={e=>setName(e.target.value)} type="text" id="name" placeholder="Su Nombre" className="w-full p-3 rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600"/>
                             </div>
                              <div>
                                 <label htmlFor="email" className="sr-only">Email</label>
-                                <input type="email" id="email" placeholder="Su Email" className="w-full p-3 rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600"/>
+                                <input value={email} onChange={e=>setEmail(e.target.value)} type="email" id="email" placeholder="Su Email" className="w-full p-3 rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600"/>
+                            </div>
+                             <div>
+                                <label htmlFor="phone" className="sr-only">Teléfono</label>
+                                <input value={phone} onChange={e=>setPhone(e.target.value)} type="tel" id="phone" placeholder="Su Teléfono (opcional)" className="w-full p-3 rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600"/>
                             </div>
                              <div>
                                 <label htmlFor="message" className="sr-only">Mensaje</label>
-                                <textarea id="message" rows={5} placeholder="Su Mensaje" className="w-full p-3 rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600"/>
+                                <textarea value={message} onChange={e=>setMessage(e.target.value)} id="message" rows={5} placeholder="Su Mensaje" className="w-full p-3 rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600"/>
                             </div>
                             <div>
-                                <button type="submit" className={`w-full px-6 py-3 text-lg font-semibold text-white rounded-lg shadow-lg transition-transform hover:scale-105 ${primaryBgClass} ${primaryHoverBgClass}`}>
-                                    Enviar Mensaje
+                                <button type="submit" disabled={submitting} className={`w-full px-6 py-3 text-lg font-semibold text-white rounded-lg shadow-lg transition-transform hover:scale-105 ${primaryBgClass} ${primaryHoverBgClass}`}>
+                                    {submitting ? 'Enviando...' : 'Enviar Mensaje'}
                                 </button>
                             </div>
                         </form>

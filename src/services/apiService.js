@@ -144,8 +144,15 @@ export const authService = {
   async register(userData) {
     try {
       const response = await api.post('/auth/register', userData);
-      if (response.data?.token) {
-        localStorage.setItem('authToken', response.data.token);
+      const token = response.data?.token || response.data?.access_token;
+      if (token) {
+        localStorage.setItem('authToken', token);
+      }
+      // Guardar usuario si viene en respuesta (Supabase devuelve user/session)
+      if (response.data?.user) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+      } else if (response.data?.email) {
+        localStorage.setItem('user', JSON.stringify({ email: response.data.email }));
       }
       return response;
     } catch (error) {
@@ -170,8 +177,12 @@ export const authService = {
   async login(email, password) {
     try {
       const response = await api.post('/auth/login', { email, password });
-      if (response.data?.token) {
-        localStorage.setItem('authToken', response.data.token);
+      const token = response.data?.token || response.data?.access_token;
+      if (token) {
+        localStorage.setItem('authToken', token);
+      }
+      if (response.data?.user) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
       }
       return response;
     } catch (error) {
