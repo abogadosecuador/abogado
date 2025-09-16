@@ -45,8 +45,8 @@ const PayPalButton = ({ amount, metadata = {} }) => {
               amount: Number(amount),
               currency: 'USD',
               description: 'Servicios legales - Abg. Wilson Ipiales',
-              return_url: `${window.location.origin}/payment/success`,
-              cancel_url: `${window.location.origin}/payment/cancel`,
+              return_url: `${window.location.origin}/gracias`,
+              cancel_url: `${window.location.origin}/`,
               metadata,
             })
           });
@@ -78,7 +78,7 @@ const PayPalButton = ({ amount, metadata = {} }) => {
             clearCart();
 
             // Redirigir a página de éxito existente en rutas
-            navigate('/payment/success', {
+            navigate('/gracias', {
               state: {
                 paymentId: captureJson?.data?.transaction_id || data.orderID,
                 amount: captureJson?.data?.amount || amount,

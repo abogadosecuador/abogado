@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  FaCreditCard, FaPaypal, FaBitcoin, FaLock, FaCheckCircle,
-  FaShippingFast, FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt,
-  FaArrowLeft, FaArrowRight, FaShoppingCart, FaPercent,
-  FaWallet, FaMobileAlt, FaQrcode, FaUniversity, FaTimes
+  FaPaypal, FaLock, FaCheckCircle,
+  FaUser,
+  FaArrowLeft, FaArrowRight, FaShoppingCart
 } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
@@ -36,28 +35,17 @@ const CheckoutSystem = () => {
     country: 'Ecuador'
   });
   
-  const [paymentMethod, setPaymentMethod] = useState('card');
-  const [cardInfo, setCardInfo] = useState({
-    number: '',
-    name: '',
-    expiry: '',
-    cvv: ''
-  });
+  const [paymentMethod, setPaymentMethod] = useState('paypal');
 
   const steps = [
     { id: 1, name: 'Carrito', icon: FaShoppingCart },
     { id: 2, name: 'Información', icon: FaUser },
-    { id: 3, name: 'Pago', icon: FaCreditCard },
+    { id: 3, name: 'Pago', icon: FaPaypal },
     { id: 4, name: 'Confirmación', icon: FaCheckCircle }
   ];
 
   const paymentMethods = [
-    { id: 'card', name: 'Tarjeta de Crédito/Débito', icon: FaCreditCard, color: 'blue' },
-    { id: 'paypal', name: 'PayPal', icon: FaPaypal, color: 'indigo' },
-    { id: 'crypto', name: 'Bitcoin/Crypto', icon: FaBitcoin, color: 'orange' },
-    { id: 'bank', name: 'Transferencia Bancaria', icon: FaUniversity, color: 'green' },
-    { id: 'mobile', name: 'Pago Móvil', icon: FaMobileAlt, color: 'purple' },
-    { id: 'qr', name: 'Código QR', icon: FaQrcode, color: 'pink' }
+    { id: 'paypal', name: 'PayPal', icon: FaPaypal, color: 'indigo' }
   ];
 
   
@@ -121,55 +109,15 @@ const CheckoutSystem = () => {
     return true;
   };
 
-  const validateCardInfo = () => {
-    if (paymentMethod !== 'card') return true;
-    
-    if (!cardInfo.number || cardInfo.number.length < 16) {
-      toast.error('Número de tarjeta inválido');
-      return false;
-    }
-    if (!cardInfo.name) {
-      toast.error('Ingrese el nombre del titular');
-      return false;
-    }
-    if (!cardInfo.expiry || !cardInfo.expiry.match(/^\d{2}\/\d{2}$/)) {
-      toast.error('Fecha de expiración inválida (MM/YY)');
-      return false;
-    }
-    if (!cardInfo.cvv || cardInfo.cvv.length < 3) {
-      toast.error('CVV inválido');
-      return false;
-    }
-    return true;
-  };
+  const validateCardInfo = () => true; // No se usa, solo PayPal
 
   const processPayment = async () => {
     setIsProcessing(true);
     
-    // Si el método es PayPal, no procesamos aquí. El botón PayPal gestiona la orden/captura.
-    if (paymentMethod === 'paypal') {
-      setIsProcessing(false);
-      toast('Use el botón de PayPal para completar el pago de forma segura.', { icon: '🛡️' });
-      return;
-    }
-
-    // Simular procesamiento (tarjeta, banco, otros). Reemplace con integración real.
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    // Éxito
-    setOrderComplete(true);
-    setCurrentStep(4);
-    clearCart();
-    
-    // Celebración
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
-    
-    toast.success('¡Pago procesado exitosamente!');
+    // Solo PayPal: el botón procesa. Aquí no hacemos nada.
     setIsProcessing(false);
+    toast('Use el botón de PayPal para completar el pago de forma segura.', { icon: '🛡️' });
+    return;
   };
 
   const handleNextStep = async () => {
@@ -183,8 +131,7 @@ const CheckoutSystem = () => {
       if (!validateBillingInfo()) return;
       setCurrentStep(3);
     } else if (currentStep === 3) {
-      // Para PayPal no validamos tarjeta; para tarjeta sí
-      if (paymentMethod === 'card' && !validateCardInfo()) return;
+      // En PayPal, el pago se completa con el botón dedicado
       await processPayment();
     }
   };
@@ -389,79 +336,18 @@ const CheckoutSystem = () => {
     <div className="space-y-6">
       <h3 className="text-xl font-bold mb-4">Método de Pago</h3>
       
-      {/* Métodos de Pago */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        {paymentMethods.map((method) => (
-          <button
-            key={method.id}
-            onClick={() => setPaymentMethod(method.id)}
-            className={`p-4 rounded-lg border-2 transition-all ${
-              paymentMethod === method.id
-                ? 'border-blue-500 bg-blue-50'
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
-          >
-            <method.icon className={`text-2xl mb-2 text-${method.color}-500`} />
-            <p className="text-sm font-medium">{method.name}</p>
-          </button>
-        ))}
+      {/* Método de Pago: solo PayPal */}
+      <div className="p-4 rounded-lg border-2 border-blue-500 bg-blue-50 flex items-center gap-3">
+        <FaPaypal className="text-3xl text-blue-600" />
+        <div>
+          <p className="font-semibold">PayPal</p>
+          <p className="text-sm text-blue-900">Paga de forma segura. La orden y captura se validan en el servidor.</p>
+        </div>
       </div>
 
-      {/* Formulario de Tarjeta */}
-      {paymentMethod === 'card' && (
-        <div className="bg-gray-50 p-6 rounded-lg space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Número de Tarjeta</label>
-            <input
-              type="text"
-              value={cardInfo.number}
-              onChange={(e) => setCardInfo({...cardInfo, number: e.target.value.replace(/\s/g, '')})}
-              placeholder="1234 5678 9012 3456"
-              maxLength="16"
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-1">Nombre del Titular</label>
-            <input
-              type="text"
-              value={cardInfo.name}
-              onChange={(e) => setCardInfo({...cardInfo, name: e.target.value})}
-              placeholder="JUAN PEREZ"
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Fecha Exp.</label>
-              <input
-                type="text"
-                value={cardInfo.expiry}
-                onChange={(e) => setCardInfo({...cardInfo, expiry: e.target.value})}
-                placeholder="MM/YY"
-                maxLength="5"
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">CVV</label>
-              <input
-                type="text"
-                value={cardInfo.cvv}
-                onChange={(e) => setCardInfo({...cardInfo, cvv: e.target.value})}
-                placeholder="123"
-                maxLength="4"
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Formulario de Tarjeta eliminado: solo PayPal */}
 
-      {/* Otros métodos de pago */}
+      {/* Botón PayPal */}
       {paymentMethod === 'paypal' && (
         <div className="bg-blue-50 p-6 rounded-lg">
           <div className="text-center mb-4">
@@ -481,23 +367,6 @@ const CheckoutSystem = () => {
               }
             }}
           />
-        </div>
-      )}
-
-      {paymentMethod === 'crypto' && (
-        <div className="bg-orange-50 p-6 rounded-lg text-center">
-          <FaBitcoin className="text-6xl text-orange-600 mx-auto mb-4" />
-          <p>Se generará una dirección de Bitcoin para el pago</p>
-        </div>
-      )}
-
-      {paymentMethod === 'bank' && (
-        <div className="bg-green-50 p-6 rounded-lg">
-          <h4 className="font-semibold mb-2">Datos para Transferencia:</h4>
-          <p className="text-sm">Banco: Banco Pichincha</p>
-          <p className="text-sm">Cuenta: 2200123456</p>
-          <p className="text-sm">Tipo: Ahorros</p>
-          <p className="text-sm">Beneficiario: Abogado Wilson Ipiales</p>
         </div>
       )}
 
@@ -615,7 +484,7 @@ const CheckoutSystem = () => {
               
               <button
                 onClick={handleNextStep}
-                disabled={isProcessing || (currentStep === 3 && paymentMethod === 'paypal')}
+                disabled={isProcessing || (currentStep === 3)}
                 className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg flex items-center"
               >
                 {isProcessing ? (

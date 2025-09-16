@@ -17,7 +17,6 @@ import { GamificationHandler } from './handlers/gamificationHandler.js';
 import { CourseContentHandler } from './handlers/courseContentHandler.js';
 import { UserContentHandler } from './handlers/userContentHandler.js';
 import { AiConsultationHandler } from './handlers/aiConsultationHandler.js';
-import { BankTransferHandler } from './handlers/bankTransferHandler.js';
 import { corsHeaders } from './headers.js';
 import { createSupabaseClient } from '../lib/supabase.js';
 import { RateLimiter } from '../lib/rate-limiter.js';
@@ -45,7 +44,7 @@ export class APIRouter {
     this.courseContentHandler = new CourseContentHandler(env, this.supabase);
     this.userContentHandler = new UserContentHandler(env, this.supabase);
     this.aiConsultationHandler = new AiConsultationHandler(env, this.supabase);
-    this.bankTransferHandler = new BankTransferHandler(env, this.supabase);
+    // Bank transfer disabled: only PayPal is allowed in production
   }
 
   async cloudinaryList(request) {
@@ -199,11 +198,8 @@ export class APIRouter {
         case 'admin':
           return await this.adminHandler.handle(request, method, id); // id here represents the resource, e.g., 'users'
         
-        case 'bank-transfer':
-          if (method === 'POST') {
-            return await this.bankTransferHandler.handle(request);
-          }
-          return this.methodNotAllowed();
+        // case 'bank-transfer': // Disabled
+        //   return this.notFound();
         
         default:
           return this.notFound();

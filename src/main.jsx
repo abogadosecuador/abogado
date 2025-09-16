@@ -3,6 +3,10 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import App from './App.jsx';
+import { AuthProvider } from './context/AuthContext.jsx';
+import { CartProvider } from './context/CartContext.jsx';
+import { ModuleProvider } from './context/ModuleContext.jsx';
+import { ThemeProvider } from './context/ThemeContext.jsx';
 import './index.css';
 
 async function loadConfig() {
@@ -36,19 +40,27 @@ async function initializeApp() {
     
     root.render(
       <React.StrictMode>
-        <BrowserRouter>
-          <App />
-          <Toaster 
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: '#363636',
-                color: '#fff',
-              },
-            }}
-          />
-        </BrowserRouter>
+        <AuthProvider>
+          <CartProvider>
+            <ModuleProvider>
+              <ThemeProvider>
+                <BrowserRouter>
+                  <App />
+                  <Toaster 
+                    position="top-right"
+                    toastOptions={{
+                      duration: 4000,
+                      style: {
+                        background: '#363636',
+                        color: '#fff',
+                      },
+                    }}
+                  />
+                </BrowserRouter>
+              </ThemeProvider>
+            </ModuleProvider>
+          </CartProvider>
+        </AuthProvider>
       </React.StrictMode>
     );
     
