@@ -263,10 +263,37 @@ export const getSupabaseClient = () => {
     const url = getSupabaseUrl();
     const key = getSupabaseKey();
     if (!url || !key) {
-      throw new Error('supabaseUrl/supabaseKey runtime no definidos');
+      console.warn('Config runtime Supabase no disponible, usando cliente temporal y reintento.');
+      supabaseClientInstance = createFallbackClient();
+      // Reintentar inicialización cuando cargue la config
+      (async () => {
+        const start = Date.now();
+        while (Date.now() - start < 5000) {
+          const u = getSupabaseUrl();
+          const k = getSupabaseKey();
+          if (u && k) {
+            try {
+              const real = createClient(u, k, options);
+              if (typeof window !== 'undefined') {
+                window.GLOBAL_SUPABASE_CLIENT = real;
+                window.SUPABASE_CLIENT_INITIALIZED = true;
+                window.SUPABASE_CLIENT_INSTANCE_ID = instanceId;
+              }
+              _supabase = real;
+              supabaseClientInstance = real;
+              console.log('Supabase client re-inicializado correctamente tras carga de config');
+              break;
+            } catch (e) {
+              console.error('Re-init Supabase fallo:', e?.message || e);
+            }
+          }
+          await new Promise(r => setTimeout(r, 150));
+        }
+      })();
+    } else {
+      // Crear cliente una sola vez con claves runtime
+      supabaseClientInstance = createClient(url, key, options);
     }
-    // Crear cliente una sola vez con claves runtime
-    supabaseClientInstance = createClient(url, key, options);
     
     // Almacenar globalmente para acceso compartido seguro
     if (typeof window !== 'undefined') {
@@ -330,20 +357,31 @@ export const supabase = new Proxy({}, {
   }
 });
 
-// Verificar la conexión al inicio
+// Verificar la conexión al inicio SIN forzar creación antes de que cargue la config
 if (typeof window !== 'undefined') {
-  try {
-    console.log('Verificando conexión con Supabase...');
-    supabase.auth.getSession().then(({ data, error }) => {
+  const waitForConfig = async (maxMs = 4000) => {
+    const start = Date.now();
+    while (Date.now() - start < maxMs) {
+      const rt = getRuntime();
+      if (rt.supabaseUrl && rt.supabaseKey) return true;
+      await new Promise(r => setTimeout(r, 100));
+    }
+    return false;
+  };
+  (async () => {
+    try {
+      console.log('Verificando conexión con Supabase...');
+      await waitForConfig(); // no importa si expira, supabase usará fallback
+      const { data, error } = await supabase.auth.getSession();
       if (error) {
         console.warn('Error de conexión con Supabase:', error.message);
       } else {
         console.log('Conexión con Supabase establecida correctamente');
       }
-    });
-  } catch (e) {
-    console.error('Error al verificar conexión con Supabase:', e);
-  }
+    } catch (e) {
+      console.error('Error al verificar conexión con Supabase:', e);
+    }
+  })();
 }
 
 // Servicio principal para Supabase

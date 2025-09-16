@@ -181,6 +181,9 @@ export class APIRouter {
         case 'health':
           return await this.healthHandler.check(action || id);
         
+        case 'status':
+          return this.success({ status: 'ok', time: Date.now() });
+        
         case 'config':
           return this.getConfig();
         
