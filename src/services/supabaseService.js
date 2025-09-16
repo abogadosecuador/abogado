@@ -29,8 +29,19 @@ const getBaseUrl = () => {
   }
 };
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || config.supabase.url;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || config.supabase.anonKey;
+const getRuntime = () => (typeof window !== 'undefined' ? (window.__APP_CONFIG__ || {}) : {});
+const getSupabaseUrl = () => {
+  return (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL)
+    || getRuntime().supabaseUrl
+    || (config?.supabase?.url)
+    || '';
+};
+const getSupabaseKey = () => {
+  return (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_ANON_KEY)
+    || getRuntime().supabaseKey
+    || (config?.supabase?.anonKey)
+    || '';
+};
 
 // Determinar si estamos en un entorno con problemas CORS (Cloudflare Workers)
 const shouldUseProxyWorker = () => {
@@ -248,9 +259,14 @@ export const getSupabaseClient = () => {
     options.auth.storageKey = `sb-auth-token-${instanceId}`;
     
     console.log(`Inicializando Supabase client único [ID: ${instanceId.substring(0,8)}]`);
-    
-    // Crear cliente una sola vez
-    supabaseClientInstance = createClient(supabaseUrl, supabaseKey, options);
+
+    const url = getSupabaseUrl();
+    const key = getSupabaseKey();
+    if (!url || !key) {
+      throw new Error('supabaseUrl/supabaseKey runtime no definidos');
+    }
+    // Crear cliente una sola vez con claves runtime
+    supabaseClientInstance = createClient(url, key, options);
     
     // Almacenar globalmente para acceso compartido seguro
     if (typeof window !== 'undefined') {

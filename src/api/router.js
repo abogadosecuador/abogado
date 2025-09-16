@@ -200,6 +200,41 @@ export class APIRouter {
         
         // case 'bank-transfer': // Disabled
         //   return this.notFound();
+
+        case 'proxy': {
+          // POST /api/proxy - restricted proxy for Supabase only
+          if (method !== 'POST') return this.methodNotAllowed();
+          try {
+            const { url, method: proxyMethod = 'GET', headers = {}, body } = await request.json();
+            if (!url || typeof url !== 'string') return this.error('URL requerida', 400);
+            const target = new URL(url);
+            // Seguridad: solo permitir dominios de Supabase
+            if (!/\.supabase\.co$/.test(target.hostname)) {
+              return this.error('Dominio no permitido', 403);
+            }
+            const proxyRes = await fetch(url, {
+              method: proxyMethod,
+              headers,
+              body: ['GET','HEAD'].includes(proxyMethod.toUpperCase()) ? undefined : body
+            });
+            const buf = await proxyRes.arrayBuffer();
+            const hdrs = new Headers(proxyRes.headers);
+            // Asegurar CORS seguro
+            hdrs.set('Access-Control-Allow-Origin', '*');
+            return new Response(buf, { status: proxyRes.status, headers: hdrs });
+          } catch (e) {
+            console.error('Proxy error:', e);
+            return this.error('Proxy error', 502);
+          }
+        }
+
+        case 'data': {
+          // Minimal endpoints para evitar 404 en UI existente
+          if (id === 'searches' && method === 'GET') {
+            return this.success([]);
+          }
+          return this.notFound();
+        }
         
         default:
           return this.notFound();
