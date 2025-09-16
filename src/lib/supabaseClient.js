@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Configuración de Supabase
-const supabaseUrl = 'https://kbybhgxqdefuquybstqk.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWJoZ3hxZGVmdXF1eWJzdHFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NjAwODMsImV4cCI6MjA3MzEzNjA4M30.s1knFM9QXd8CH8TC0IOtBBBvb-qm2XYl_VlhVb-CqcE';
+// Configuración de Supabase desde runtime config
+const cfg = (typeof window !== 'undefined' && window.__APP_CONFIG__) || {};
+const supabaseUrl = cfg.supabaseUrl || 'https://kbybhgxqdefuquybstqk.supabase.co';
+const supabaseAnonKey = cfg.supabaseKey || '';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {

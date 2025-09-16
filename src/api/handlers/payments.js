@@ -8,7 +8,11 @@ export class PaymentHandler {
   constructor(env, supabase) {
     this.env = env;
     this.supabase = supabase;
-    this.paypalApiUrl = 'https://api-m.paypal.com';
+    // Determine PayPal API base URL based on mode
+    const mode = (env.PAYPAL_MODE || 'live').toLowerCase();
+    this.paypalApiUrl = env.PAYPAL_API_BASE || (mode === 'sandbox'
+      ? 'https://api-m.sandbox.paypal.com'
+      : 'https://api-m.paypal.com');
   }
 
   async handle(request, method, id, action) {

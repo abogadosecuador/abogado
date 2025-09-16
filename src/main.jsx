@@ -3,23 +3,33 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import App from './App.jsx';
-import HelmetWrapper from './components/Common/HelmetWrapper';
 import './index.css';
 
-// Configuración global
-window.__APP_CONFIG__ = {
-  version: '3.0.0',
-  environment: 'production',
-  apiUrl: '/api',
-  supabaseUrl: 'https://kbybhgxqdefuquybstqk.supabase.co',
-  supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWJoZ3hxZGVmdXF1eWJzdHFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NjAwODMsImV4cCI6MjA3MzEzNjA4M30.s1knFM9QXd8CH8TC0IOtBBBvb-qm2XYl_VlhVb-CqcE',
-  geminiApiKey: 'AIzaSyCAkIkgslyxArR_kg1kVRREzrjeGWavyyU',
-  appUrl: 'https://abogadosecuador.workers.dev'
-};
-
-// Función de inicialización simplificada
-function initializeApp() {
+async function loadConfig() {
   try {
+    const res = await fetch('/api/config', { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) throw new Error('No se pudo cargar configuración');
+    const cfg = await res.json();
+    if (!cfg?.data?.supabase_url || !cfg?.data?.supabase_anon_key) throw new Error('Config incompleta');
+    window.__APP_CONFIG__ = {
+      version: cfg.data.app_version || '3.0.0',
+      environment: 'production',
+      apiUrl: '/api',
+      supabaseUrl: cfg.data.supabase_url,
+      supabaseKey: cfg.data.supabase_anon_key,
+      paypalClientId: cfg.data.paypal_client_id || '',
+      appUrl: cfg.data.app_url || location.origin
+    };
+  } catch (e) {
+    console.error('Error cargando config:', e);
+    // fallback mínimo para no romper la app
+    window.__APP_CONFIG__ = window.__APP_CONFIG__ || { apiUrl: '/api' };
+  }
+}
+
+async function initializeApp() {
+  try {
+    await loadConfig();
     console.log('🚀 Iniciando aplicación Abogado Wilson...');
     
     const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -27,9 +37,7 @@ function initializeApp() {
     root.render(
       <React.StrictMode>
         <BrowserRouter>
-          <HelmetWrapper>
-            <App />
-          </HelmetWrapper>
+          <App />
           <Toaster 
             position="top-right"
             toastOptions={{
@@ -95,7 +103,7 @@ function initializeApp() {
 
 // Inicializar cuando el DOM esté listo
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeApp);
+  document.addEventListener('DOMContentLoaded', () => { initializeApp(); });
 } else {
   initializeApp();
 }

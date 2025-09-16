@@ -34,3 +34,9 @@ CONTACT_EMAIL = "Wifirmalegal@gmail.com"
 CLOUDINARY_CLOUD_NAME = "dg3s7tqoj"
 APP_URL = "https://abogados.ecuador.workers.dev"
 API_URL = "https://abogados.ecuador.workers.dev/api"
+PAYPAL_MODE = "live" # "sandbox" o "live"
+# Public client ID (no secreto). Configure el de SANDBOX o LIVE según el modo.
+PAYPAL_CLIENT_ID = "AWxKgr5n7ex5Lc3fDBOooaVHLgcAB-KCrYXgCmit9DpNXFIuBa6bUypYFjr-hAqARlILGxk_rRTsBZeS"
+# Opcional: forzar base API; normalmente no es necesario si usa PAYPAL_MODE
+# PAYPAL_API_BASE = "https://api-m.paypal.com"
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWJoZ3hxZGVmdXF1eWJzdHFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NjAwODMsImV4cCI6MjA3MzEzNjA4M30.s1knFM9QXd8CH8TC0IOtBBBvb-qm2XYl_VlhVb-CqcE"

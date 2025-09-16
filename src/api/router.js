@@ -286,6 +286,7 @@ export class APIRouter {
       supabase_anon_key: this.env.SUPABASE_ANON_KEY || this.env.SUPABASE_KEY,
       paypal_client_id: this.env.PAYPAL_CLIENT_ID,
       cloudinary_cloud_name: this.env.CLOUDINARY_CLOUD_NAME,
+      app_url: this.env.APP_URL,
       app_version: '3.0.0',
       features: {
         auth: true,
