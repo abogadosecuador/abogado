@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FaUsers, FaChartLine, FaShoppingCart, FaBook, FaNewspaper, FaCog, FaSignOutAlt, FaPalette, FaGift, FaGamepad, FaComments, FaRocket, FaChartPie, FaClock } from 'react-icons/fa';
+import { FaUsers, FaChartLine, FaShoppingCart, FaBook, FaNewspaper, FaCog, FaPalette, FaGift, FaGamepad, FaComments, FaRocket, FaChartPie } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { dataService } from '../../services/supabaseService';
+import CourseManager from './Admin/CourseManager'; // Importar el gestor de cursos
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -84,7 +85,9 @@ const AdminDashboard = () => {
               </div>
             )}
             {/* Aquí se añadirían los componentes para las otras pestañas */}
-            {activeTab !== 'overview' && <div className="bg-white p-6 rounded-lg shadow-md">Gestión de {activeTab}...</div>}
+            {activeTab === 'courses' && <CourseManager />}
+            {/* Añadir aquí los componentes para las otras pestañas cuando se creen */}
+            {activeTab !== 'overview' && activeTab !== 'courses' && <div className="bg-white p-6 rounded-lg shadow-md">Gestión de {activeTab}...</div>}
           </motion.div>
         </AnimatePresence>
       </main>

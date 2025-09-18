@@ -1,44 +1,67 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { dataService } from '../services/supabaseService';
-import AdminDashboard from '../components/Dashboard/AdminDashboard';
+import React from 'react';
+import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import ClientDashboard from '../components/Dashboard/ClientDashboard';
+import AdminDashboard from '../components/Dashboard/AdminDashboard';
+import MyCoursesPage from './MyCoursesPage';
+import MyPurchasesPage from './MyPurchasesPage';
+import CoursePlayer from '../components/Dashboard/Client/CoursePlayer';
+import { useAuth } from '../context/AuthContext';
+import { LayoutDashboard, ShoppingCart, BookOpen, LogOut } from 'lucide-react';
 
-const DashboardPage: React.FC = () => {
-  const { user } = useAuth();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
+const DashboardLayout = ({ children, isAdmin }) => {
+  const location = useLocation();
+  const { logout } = useAuth();
 
-  useEffect(() => {
-    const checkUserRole = async () => {
-      if (user) {
-        try {
-          // Lógica para verificar el rol del usuario desde Supabase
-          const { data, error } = await dataService.getById('profiles', user.id);
-          if (error) throw error;
+  const isActive = (path) => location.pathname === path;
 
-          // Asumimos que el perfil tiene un campo 'role'
-          if (data && data.role === 'admin') {
-            setIsAdmin(true);
-          }
-        } catch (error) {
-          console.error('Error al verificar el rol del usuario:', error);
-        }
-      }
-      setLoading(false);
-    };
+  const clientMenu = [
+    { path: '/dashboard', name: 'General', icon: LayoutDashboard },
+    { path: '/dashboard/mis-cursos', name: 'Mis Cursos', icon: BookOpen },
+    { path: '/dashboard/mis-compras', name: 'Mis Compras', icon: ShoppingCart },
+  ];
 
-    checkUserRole();
-  }, [user]);
-
-  if (loading) {
-    return <div className="text-center p-8">Cargando dashboard...</div>;
+  // Menú de admin se manejaría dentro de AdminDashboard
+  if (isAdmin) {
+    return <AdminDashboard />;
   }
 
-  // Renderiza el dashboard correspondiente según el rol
-  return isAdmin ? <AdminDashboard /> : <ClientDashboard user={user} />;
+  return (
+    <div className="flex min-h-screen bg-gray-100">
+      <aside className="w-64 bg-white shadow-md p-4">
+        <nav className="space-y-2">
+          {clientMenu.map(item => (
+            <Link key={item.path} to={item.path} className={`flex items-center p-2 rounded-md text-sm font-medium ${isActive(item.path) ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-50'}`}>
+              <item.icon size={18} className="mr-3" />
+              {item.name}
+            </Link>
+          ))}
+        </nav>
+        <button onClick={logout} className="flex items-center p-2 mt-4 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-50 w-full">
+          <LogOut size={18} className="mr-3" />
+          Cerrar Sesión
+        </button>
+      </aside>
+      <main className="flex-1 p-6">
+        {children}
+      </main>
+    </div>
+  );
 };
 
-export default DashboardPage;
+const DashboardPage = () => {
+  const { user, hasRole } = useAuth();
+  const isAdmin = hasRole('admin');
+
+  return (
+    <DashboardLayout isAdmin={isAdmin}>
+      <Routes>
+        <Route index element={<ClientDashboard user={user} />} />
+        <Route path="mis-cursos" element={<MyCoursesPage />} />
+        <Route path="mis-compras" element={<MyPurchasesPage />} />
+        <Route path="cursos/:courseId" element={<CoursePlayer />} />
+      </Routes>
+    </DashboardLayout>
+  );
+};
 
 export default DashboardPage;

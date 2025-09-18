@@ -12,6 +12,7 @@ const RegisterPage = React.lazy(() => import('../pages/RegisterPage'));
 const DashboardPage = React.lazy(() => import('../pages/DashboardPage'));
 const Blog = React.lazy(() => import('../pages/Blog'));
 const CatalogPage = React.lazy(() => import('../pages/CatalogPage'));
+const MasterclassPage = React.lazy(() => import('../pages/MasterclassPage'));
 // Páginas adicionales
 const CalendarPage = React.lazy(() => import('../pages/CalendarPage'));
 const ProcessSearch = React.lazy(() => import('../pages/ProcessSearch'));
@@ -39,6 +40,7 @@ const AppRoutes: React.FC = () => {
           <Route path="catalogo" element={<CatalogPage />} />
           <Route path="calendario" element={<CalendarPage />} />
           <Route path="consultas" element={<ProcessSearch />} />
+          <Route path="masterclass" element={<MasterclassPage />} />
         </Route>
 
         {/* Rutas privadas */}

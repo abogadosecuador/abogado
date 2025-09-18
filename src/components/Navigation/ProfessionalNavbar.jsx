@@ -13,6 +13,7 @@ const navConfig = {
     { name: 'Servicios', href: '/servicios' },
     { name: 'Tienda', href: '/catalogo' },
     { name: 'Blog', href: '/blog' },
+    { name: 'Masterclass', href: '/masterclass' },
     { name: 'Contacto', href: '/contacto' },
   ],
   contact: {

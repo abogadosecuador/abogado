@@ -1,5 +1,5 @@
 name = "abogados-ecuador"
-main = "_worker.js"
+main = "src/worker.ts"
 compatibility_date = "2025-01-01"
 account_id = "70661c46051942965565a5c976219dde"
 workers_dev = true

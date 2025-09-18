@@ -8,7 +8,7 @@ import LoadingSpinner from './components/Common/LoadingSpinner';
 const HomePage = lazy(() => import('./components/Home/HomePage'));
 const AboutPage = lazy(() => import('./components/About/AboutPage'));
 const ConsultasPage = lazy(() => import('./components/Consultation/ConsultasPage'));
-const UnifiedStore = lazy(() => import('./components/Store/UnifiedStore'));
+const Shop = lazy(() => import('./components/Shop/Shop'));
 const CheckoutSystem = lazy(() => import('./components/Checkout/CheckoutSystem'));
 const AppointmentScheduler = lazy(() => import('./components/Appointment/AppointmentScheduler'));
 const ThankYouPage = lazy(() => import('./components/Payment/ThankYouPage'));
@@ -25,7 +25,7 @@ const App = () => (
           <Route path="/" element={<HomePage />} />
           <Route path="/sobre-nosotros" element={<AboutPage />} />
           <Route path="/consultas" element={<ConsultasPage />} />
-          <Route path="/tienda" element={<UnifiedStore />} />
+          <Route path="/tienda" element={<Shop />} />
           <Route path="/checkout" element={<CheckoutSystem />} />
           <Route path="/calendario" element={<AppointmentScheduler />} />
           <Route path="/login" element={<Login />} />

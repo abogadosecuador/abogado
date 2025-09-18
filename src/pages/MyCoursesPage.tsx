@@ -1,102 +1,71 @@
 import React, { useState, useEffect } from 'react';
-import Card from '../components/Card';
-import { Page, PublicRoute, CatalogItem } from '../types';
-import { BookOpenIcon } from '../components/icons/InterfaceIcons';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { dataService } from '../services/supabaseService';
+import { BookOpen } from 'lucide-react';
 
-const CATALOG_KEY = 'nexuspro_catalog';
-const USER_PURCHASES_KEY = 'user_purchases';
-const USER_PROGRESS_KEY = 'nexuspro_user_progress';
+const MyCoursesPage = () => {
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
-// Helper to calculate progress
-const calculateProgress = (course, userProgress) => {
-    if (!course.modules || course.modules.length === 0) return 0;
-    const totalLessons = course.modules.reduce((acc, mod) => acc + (mod.lessons?.length || 0), 0);
-    if (totalLessons === 0) return 0;
+  useEffect(() => {
+    const fetchMyCourses = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const { data: purchases, error: purchasesError } = await dataService.getAll('purchases', { 
+          filters: [
+            { column: 'user_id', value: user.id },
+            { column: 'item_type', value: 'course' }
+          ]
+        });
+        if (purchasesError) throw purchasesError;
 
-    const progressRecord = userProgress.find(p => p.courseId === course.id);
-    const completedLessons = progressRecord ? progressRecord.completedLessons.length : 0;
-
-    return Math.round((completedLessons / totalLessons) * 100);
-};
-
-
-const CourseProgressCard = ({ course, progress, onNavigate }) => (
-    <Card className="flex flex-col group cursor-pointer" onClick={() => onNavigate(`course-detail/${course.id}`)}>
-        <img src={course.imageUrl} alt={course.name} className="w-full h-40 object-cover rounded-t-xl" />
-        <div className="p-4 flex flex-col flex-grow">
-            <h3 className="text-lg font-bold group-hover:text-[var(--accent-color)] transition-colors">{course.name}</h3>
-            <div className="mt-4 flex-grow">
-                <div className="flex justify-between items-center mb-1 text-sm">
-                    <span className="font-semibold text-[var(--muted-foreground)]">Progreso</span>
-                    <span className="font-bold text-[var(--accent-color)]">{progress}%</span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                    <div className="bg-[var(--accent-color)] h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
-                </div>
-            </div>
-            <button className="mt-4 w-full px-4 py-2 text-sm font-semibold text-[var(--primary-foreground)] bg-[var(--primary)] rounded-md hover:opacity-90">
-                Continuar
-            </button>
-        </div>
-    </Card>
-);
-
-const MyCoursesPage: React.FC<{onNavigate: (page: Page | PublicRoute | string) => void}> = ({ onNavigate }) => {
-    const [myCourses, setMyCourses] = useState<CatalogItem[]>([]);
-    const [userProgress, setUserProgress] = useState([]);
-
-    useEffect(() => {
-        const catalogString = localStorage.getItem(CATALOG_KEY);
-        const purchasesString = localStorage.getItem(USER_PURCHASES_KEY);
-        const progressString = localStorage.getItem(USER_PROGRESS_KEY);
-
-        if (catalogString && purchasesString) {
-            const allItems: CatalogItem[] = JSON.parse(catalogString);
-            const allPurchases = JSON.parse(purchasesString);
-            const allProgress = progressString ? JSON.parse(progressString) : [];
-
-            const purchasedCourseIds = new Set(
-                allPurchases
-                    .filter(p => p.itemType === 'course')
-                    .map(p => p.itemId)
-            );
-
-            const userCourses = allItems.filter(item => (item.type === 'course' || item.type === 'masterclass') && purchasedCourseIds.has(item.id));
-            
-            setMyCourses(userCourses);
-            setUserProgress(allProgress);
+        const courseIds = purchases.map(p => p.item_id);
+        if (courseIds.length > 0) {
+          const { data: coursesData, error: coursesError } = await dataService.getAll('courses', { 
+            filters: [{ column: 'id', operator: 'in', value: courseIds }]
+          });
+          if (coursesError) throw coursesError;
+          setCourses(coursesData || []);
         }
-    }, []);
+      } catch (err) {
+        console.error('Error al cargar mis cursos:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMyCourses();
+  }, [user]);
 
-    return (
-        <div className="space-y-8">
-            <header>
-                 <h1 className="text-3xl font-bold flex items-center">
-                    <BookOpenIcon className="h-8 w-8 mr-3 text-[var(--accent-color)]"/> Mis Cursos
-                </h1>
-                <p className="mt-1 text-[var(--muted-foreground)]">Continúa tu aprendizaje y sigue tu progreso.</p>
-            </header>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {myCourses.map(course => (
-                    <CourseProgressCard 
-                        key={course.id} 
-                        course={course}
-                        progress={calculateProgress(course, userProgress)}
-                        onNavigate={onNavigate}
-                    />
-                ))}
-            </div>
-             {myCourses.length === 0 && (
-                <Card className="text-center py-12">
-                    <p className="text-[var(--muted-foreground)]">No te has inscrito a ningún curso todavía.</p>
-                    <button onClick={() => onNavigate('courses')} className="mt-4 px-4 py-2 text-sm font-semibold text-[var(--primary-foreground)] bg-[var(--primary)] rounded-md hover:opacity-90">
-                        Explorar Cursos
-                    </button>
-                </Card>
-            )}
+  if (loading) return <div className="text-center p-8">Cargando tus cursos...</div>;
+
+  return (
+    <div className="space-y-6 p-4 md:p-6">
+      <header>
+        <h1 className="text-3xl font-bold flex items-center text-gray-800"><BookOpen className="h-8 w-8 mr-3 text-blue-600"/> Mis Cursos</h1>
+        <p className="mt-1 text-gray-600">Continúa tu aprendizaje donde lo dejaste.</p>
+      </header>
+
+      {courses.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {courses.map(course => (
+            <Link to={`/dashboard/cursos/${course.id}`} key={course.id} className="bg-white rounded-lg shadow-sm overflow-hidden block hover:shadow-lg transition-shadow">
+              <img src={course.image_url || 'https://via.placeholder.com/400x300.png?text=Curso'} alt={course.name} className="w-full h-40 object-cover" />
+              <div className="p-4">
+                <h3 className="font-bold text-lg text-gray-800">{course.name}</h3>
+              </div>
+            </Link>
+          ))}
         </div>
-    );
+      ) : (
+        <div className="text-center py-16 bg-white rounded-lg shadow-sm"><p className="text-gray-500">Aún no te has inscrito en ningún curso.</p></div>
+      )}
+    </div>
+  );
 };
 
 export default MyCoursesPage;
