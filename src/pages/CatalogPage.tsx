@@ -4,7 +4,7 @@ import FilterBar from '../components/FilterBar';
 import ProductCard from '../components/ProductCard';
 import { SearchIcon } from '../components/icons/InterfaceIcons';
 import { Page, PublicRoute } from '../types';
-import { legalServices, digitalProducts, courses } from '../data/servicesData';
+import { dataService } from '../services/supabaseService';
 import CatalogItemModal from '../components/CatalogItemModal';
 
 const CATALOG_KEY = 'nexuspro_catalog';
@@ -26,79 +26,32 @@ const CatalogPage: React.FC<CatalogPageProps> = ({ onNavigate, navigationPayload
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
-        const catalogString = localStorage.getItem(CATALOG_KEY);
-        if (catalogString) {
-            setAllItems(JSON.parse(catalogString));
-        } else {
-            // Construir catálogo unificado desde fuentes locales
-            const services: CatalogItem[] = legalServices.map((s) => ({
-                id: s.id,
-                type: 'service',
-                name: s.title,
-                description: s.shortDescription,
-                price: s.price,
-                status: 'active',
-                category: s.category,
-                imageUrl: s.imageUrl || '/images/services/placeholder.jpg',
-                slug: s.slug,
-                shortDescription: s.shortDescription,
-                longDescription: s.longDescription,
-                keyPoints: s.keyPoints,
-              }));
+        const fetchCatalogData = async () => {
+            try {
+                // Cargar todos los productos, servicios y cursos desde Supabase
+                const { data: services, error: servicesError } = await dataService.getAll('services');
+                if (servicesError) throw servicesError;
 
-            const products: CatalogItem[] = digitalProducts.map((p) => ({
-                id: p.id,
-                type: p.type === 'digital' ? 'ebook' : 'product',
-                name: p.name,
-                description: p.description,
-                price: p.price,
-                status: 'active',
-                category: p.category,
-                imageUrl: p.imageUrl,
-              }));
+                const { data: products, error: productsError } = await dataService.getAll('products');
+                if (productsError) throw productsError;
 
-            const courseItems: CatalogItem[] = courses.map((c) => ({
-                id: c.id,
-                type: 'course',
-                name: c.title,
-                description: c.description,
-                price: c.price,
-                status: 'active',
-                category: c.category,
-                imageUrl: c.imageUrl,
-              } as CatalogItem));
+                const { data: courses, error: coursesError } = await dataService.getAll('courses');
+                if (coursesError) throw coursesError;
 
-            const unified = [...services, ...products, ...courseItems];
-            setAllItems(unified);
-            localStorage.setItem(CATALOG_KEY, JSON.stringify(unified));
-        }
+                // Unificar todos los items en un solo catálogo para la UI
+                const unifiedCatalog = [
+                    ...(services || []).map(item => ({ ...item, type: 'service' })),
+                    ...(products || []).map(item => ({ ...item, type: 'product' })),
+                    ...(courses || []).map(item => ({ ...item, type: 'course' }))
+                ];
 
-        // Enriquecer imágenes desde Cloudinary (si hay credenciales configuradas en backend)
-        // Buscamos por prefijos comunes (services/, products/, courses/). Ignoramos errores silenciosamente
-        (async () => {
-          try {
-            const res = await fetch('/api/cloudinary/list?max_results=100');
-            if (res.ok) {
-              const json = await res.json();
-              const images: { public_id: string; url: string }[] = json?.data || [];
-              if (Array.isArray(images) && images.length > 0) {
-                const byName: Record<string, string> = {};
-                images.forEach(img => {
-                  const key = img.public_id.split('/').pop() || img.public_id; // usar el último segmento como posible key
-                  byName[key.toLowerCase()] = img.url;
-                });
-                setAllItems(prev => prev.map(it => {
-                  const slug = (it.slug || it.name || '').toLowerCase().replace(/\s+/g, '-');
-                  const idKey = (it.id || '').toLowerCase();
-                  const newUrl = byName[slug] || byName[idKey] || it.imageUrl;
-                  return { ...it, imageUrl: newUrl || it.imageUrl };
-                }));
-              }
+                setAllItems(unifiedCatalog);
+            } catch (error) {
+                console.error('Error al cargar el catálogo:', error);
             }
-          } catch (e) {
-            // ignorar, el catálogo seguirá funcionando con imágenes locales
-          }
-        })();
+        };
+
+        fetchCatalogData();
 
         if (navigationPayload?.searchTerm) {
             setSearchTerm(navigationPayload.searchTerm);

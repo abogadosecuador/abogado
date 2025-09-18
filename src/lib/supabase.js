@@ -5,11 +5,14 @@
 import { createClient } from '@supabase/supabase-js';
 
 export function createSupabaseClient(env) {
-  const url = env.SUPABASE_URL || 'https://kbybhgxqdefuquybstqk.supabase.co';
-  const key = env.SUPABASE_SERVICE_KEY || env.SUPABASE_ANON_KEY || env.SUPABASE_KEY;
-  if (!key) {
-    throw new Error('SUPABASE_ANON_KEY (or SUPABASE_SERVICE_KEY) is not set in environment. Configure it via wrangler secrets.');
+  const url = env.SUPABASE_URL;
+  const key = env.SUPABASE_ANON_KEY;
+
+  if (!url || !key) {
+    throw new Error('Las variables de entorno SUPABASE_URL y SUPABASE_ANON_KEY son obligatorias.');
   }
+
+  // Para operaciones de usuario, siempre se debe usar la clave anónima.
   return createClient(url, key);
 }
 

@@ -1,163 +1,38 @@
-import React from 'react';
-import { 
-  ScaleIcon, 
-  UserGroupIcon, 
-  CarIcon, 
-  BuildingOfficeIcon,
-  HeartIcon,
-  DocumentTextIcon,
-  ClockIcon,
-  CurrencyDollarIcon,
-  CheckCircleIcon
-} from '@heroicons/react/24/outline';
+import React, { useState, useEffect } from 'react';
+import { ScaleIcon, UserGroupIcon, CarIcon, BuildingOfficeIcon, HeartIcon, DocumentTextIcon, ClockIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
+import { dataService } from '../services/supabaseService';
+
+const iconMap = {
+  civil: ScaleIcon,
+  penal: UserGroupIcon,
+  transito: CarIcon,
+  laboral: BuildingOfficeIcon,
+  comercial: DocumentTextIcon,
+  familia: HeartIcon,
+  default: ScaleIcon,
+};
 
 const ServicesPage = () => {
-  const services = [
-    {
-      id: 'consulta-civil',
-      name: 'Consulta Civil',
-      description: 'Asesoría legal especializada en derecho civil, contratos, responsabilidad civil y derecho de propiedad.',
-      price: 50,
-      duration: '1 hora',
-      category: 'Civil',
-      features: [
-        'Análisis completo del caso',
-        'Asesoría legal personalizada',
-        'Documento de recomendaciones',
-        'Seguimiento por 30 días',
-        'Consultas adicionales incluidas'
-      ],
-      icon: ScaleIcon,
-      color: 'bg-blue-500',
-      popular: true
-    },
-    {
-      id: 'consulta-penal',
-      name: 'Consulta Penal',
-      description: 'Defensa legal profesional en casos penales, asesoría en procesos judiciales y representación legal.',
-      price: 80,
-      duration: '1.5 horas',
-      category: 'Penal',
-      features: [
-        'Análisis detallado del caso penal',
-        'Estrategia de defensa personalizada',
-        'Revisión exhaustiva de evidencias',
-        'Representación legal inicial',
-        'Plan de acción estratégico'
-      ],
-      icon: UserGroupIcon,
-      color: 'bg-red-500',
-      popular: true
-    },
-    {
-      id: 'consulta-transito',
-      name: 'Consulta de Tránsito',
-      description: 'Asesoría especializada en infracciones de tránsito, multas, licencias y procesos administrativos.',
-      price: 40,
-      duration: '45 minutos',
-      category: 'Tránsito',
-      features: [
-        'Revisión completa de la infracción',
-        'Estrategia de defensa optimizada',
-        'Gestión administrativa integral',
-        'Acompañamiento al proceso completo',
-        'Resolución rápida y eficiente'
-      ],
-      icon: CarIcon,
-      color: 'bg-green-500',
-      popular: false
-    },
-    {
-      id: 'consulta-laboral',
-      name: 'Consulta Laboral',
-      description: 'Asesoría experta en derecho laboral, despidos, contratos y conflictos laborales.',
-      price: 60,
-      duration: '1 hora',
-      category: 'Laboral',
-      features: [
-        'Análisis del conflicto laboral',
-        'Revisión y optimización de contratos',
-        'Estrategia legal personalizada',
-        'Representación si es necesario',
-        'Protección de derechos laborales'
-      ],
-      icon: BuildingOfficeIcon,
-      color: 'bg-purple-500',
-      popular: false
-    },
-    {
-      id: 'consulta-comercial',
-      name: 'Consulta Comercial',
-      description: 'Asesoría integral en derecho comercial, sociedades, contratos mercantiles y litigios comerciales.',
-      price: 70,
-      duration: '1.5 horas',
-      category: 'Comercial',
-      features: [
-        'Análisis comercial del caso',
-        'Revisión y optimización de contratos',
-        'Estrategia legal comercial',
-        'Documentación legal completa',
-        'Protección de intereses comerciales'
-      ],
-      icon: DocumentTextIcon,
-      color: 'bg-indigo-500',
-      popular: false
-    },
-    {
-      id: 'consulta-familia',
-      name: 'Consulta de Familia',
-      description: 'Asesoría especializada en derecho de familia, divorcios, custodia, alimentos y sucesiones.',
-      price: 55,
-      duration: '1 hora',
-      category: 'Familia',
-      features: [
-        'Análisis del caso familiar',
-        'Mediación inicial profesional',
-        'Documentación legal completa',
-        'Seguimiento del proceso',
-        'Resolución pacífica de conflictos'
-      ],
-      icon: HeartIcon,
-      color: 'bg-pink-500',
-      popular: false
-    }
-  ];
+  const [services, setServices] = useState([]);
+  const [testimonials, setTestimonials] = useState([]);
 
-  const testimonials = [
-    {
-      id: 1,
-      name: 'María González',
-      role: 'Empresaria',
-      content: 'Excelente servicio legal. El Dr. Wilson me ayudó a resolver un conflicto comercial de manera eficiente y profesional.',
-      rating: 5,
-      service: 'Consulta Comercial'
-    },
-    {
-      id: 2,
-      name: 'Carlos Rodríguez',
-      role: 'Profesional',
-      content: 'Muy profesional y conocedor del derecho. Recomiendo sus servicios sin duda alguna. Resolvió mi caso penal exitosamente.',
-      rating: 5,
-      service: 'Consulta Penal'
-    },
-    {
-      id: 3,
-      name: 'Ana Martínez',
-      role: 'Estudiante',
-      content: 'Los cursos son muy completos y prácticos. He aprendido mucho sobre derecho civil y me siento más preparada.',
-      rating: 5,
-      service: 'Cursos Legales'
-    },
-    {
-      id: 4,
-      name: 'Luis Fernández',
-      role: 'Conductor',
-      content: 'Excelente asesoría en tránsito. Me ayudó a resolver mi multa de manera rápida y económica.',
-      rating: 5,
-      service: 'Consulta de Tránsito'
-    }
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data: servicesData, error: servicesError } = await dataService.getAll('services');
+        if (servicesError) throw servicesError;
+        setServices(servicesData || []);
+
+        const { data: testimonialsData, error: testimonialsError } = await dataService.getAll('testimonials');
+        if (testimonialsError) throw testimonialsError;
+        setTestimonials(testimonialsData || []);
+      } catch (error) {
+        console.error('Error al cargar los datos de la página de servicios:', error);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -214,7 +89,7 @@ const ServicesPage = () => {
               )}
               <div className="p-6">
                 <div className={`w-16 h-16 ${service.color} rounded-lg flex items-center justify-center mb-4`}>
-                  <service.icon className="w-8 h-8 text-white" />
+                  {React.createElement(iconMap[service.icon_key] || iconMap.default, { className: 'w-8 h-8 text-white' })}
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">{service.name}</h3>
                 <p className="text-gray-600 mb-4">{service.description}</p>

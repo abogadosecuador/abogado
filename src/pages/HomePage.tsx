@@ -1,35 +1,43 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { TypeAnimation } from 'react-type-animation';
 import { Shield, Users, Briefcase, Scale, BookOpen, CreditCard, Phone, Mail } from 'lucide-react';
+import { dataService } from '../services/supabaseService'; // Importar el servicio de datos
+
+// Mapeo de iconos para que coincida con los datos de la DB
+const iconMap = {
+  penal: <Scale className="w-6 h-6" />,
+  civil: <Users className="w-6 h-6" />,
+  comercial: <Briefcase className="w-6 h-6" />,
+  transito: <Shield className="w-6 h-6" />,
+  default: <Scale className="w-6 h-6" />
+};
 
 const HomePage: React.FC = () => {
-  const services = [
-    {
-      icon: <Scale className="w-6 h-6" />,
-      title: 'Derecho Penal',
-      description: 'Defensa legal especializada en casos penales con experiencia comprobada.',
-      link: '/services/penal'
-    },
-    {
-      icon: <Users className="w-6 h-6" />,
-      title: 'Derecho Civil',
-      description: 'Asesoría integral en contratos, familia, sucesiones y propiedad.',
-      link: '/services/civil'
-    },
-    {
-      icon: <Briefcase className="w-6 h-6" />,
-      title: 'Derecho Comercial',
-      description: 'Soluciones jurídicas para empresas y emprendedores.',
-      link: '/services/comercial'
-    },
-    {
-      icon: <Shield className="w-6 h-6" />,
-      title: 'Derecho de Tránsito',
-      description: 'Representación legal en casos de tránsito y accidentes.',
-      link: '/services/transito'
+  const [services, setServices] = useState([]);
+  const [config, setConfig] = useState({ contactPhone: '', contactEmail: '' });
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        // Asumimos que hay una tabla 'services' con los campos necesarios
+        const { data, error } = await dataService.getAll('services', { limit: 4 });
+        if (error) throw error;
+        setServices(data || []);
+      } catch (err) {
+        console.error('Error al cargar los servicios:', err);
+      }
+    };
+
+    fetchServices();
+    // Cargar la configuración de contacto desde el objeto global
+    if (window.__APP_CONFIG__) {
+      setConfig({
+        contactPhone: window.__APP_CONFIG__.WHATSAPP_NUMBER || '',
+        contactEmail: window.__APP_CONFIG__.CONTACT_EMAIL || ''
+      });
     }
-  ];
+  }, []);
 
 
   return (
@@ -82,17 +90,19 @@ const HomePage: React.FC = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {services.map((service, index) => (
+              // Asumimos que 'service' tiene: id, link, icon_key, title, description
               <Link
-                key={index}
-                to={service.link}
+                key={service.id || index}
+                to={service.link || '#'}
                 className="group p-6 bg-white rounded-xl border border-gray-200 hover:border-blue-500 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
               >
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  {service.icon}
+                  {iconMap[service.icon_key] || iconMap.default}
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">{service.title}</h3>
                 <p className="text-gray-600">{service.description}</p>
               </Link>
+            ))}
             ))}
           </div>
         </div>
@@ -137,20 +147,24 @@ const HomePage: React.FC = () => {
           <h2 className="text-4xl font-bold text-white mb-4">¿Necesita asesoría legal?</h2>
           <p className="text-xl text-blue-100 mb-8">Contáctenos hoy mismo para una consulta gratuita</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="tel:+593988835269"
-              className="inline-flex items-center justify-center px-6 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:shadow-xl transition-all"
-            >
-              <Phone className="w-5 h-5 mr-2" />
-              +593 98 883 5269
-            </a>
-            <a
-              href="mailto:Wifirmalegal@gmail.com"
-              className="inline-flex items-center justify-center px-6 py-3 bg-blue-700 text-white font-semibold rounded-lg hover:bg-blue-800 transition-all"
-            >
-              <Mail className="w-5 h-5 mr-2" />
-              Wifirmalegal@gmail.com
-            </a>
+            {config.contactPhone && (
+              <a
+                href={`tel:${config.contactPhone}`}
+                className="inline-flex items-center justify-center px-6 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:shadow-xl transition-all"
+              >
+                <Phone className="w-5 h-5 mr-2" />
+                {config.contactPhone}
+              </a>
+            )}
+            {config.contactEmail && (
+              <a
+                href={`mailto:${config.contactEmail}`}
+                className="inline-flex items-center justify-center px-6 py-3 bg-blue-700 text-white font-semibold rounded-lg hover:bg-blue-800 transition-all"
+              >
+                <Mail className="w-5 h-5 mr-2" />
+                {config.contactEmail}
+              </a>
+            )}
           </div>
         </div>
       </section>

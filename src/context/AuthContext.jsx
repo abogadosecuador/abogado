@@ -1,5 +1,6 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
+import { dataService } from '../services/supabaseService';
 
 // Crear el contexto
 const AuthContext = createContext();
@@ -12,6 +13,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authReady, setAuthReady] = useState(false);
+  const [userPurchases, setUserPurchases] = useState(new Set());
 
   // Verificar autenticación al cargar (valida token contra backend)
   useEffect(() => {
@@ -44,6 +46,27 @@ export const AuthProvider = ({ children }) => {
     };
     checkAuth();
   }, []);
+
+  // Cargar las compras del usuario cuando inicie sesión
+  useEffect(() => {
+    const fetchUserPurchases = async () => {
+      if (user) {
+        try {
+          const { data, error } = await dataService.getAll('purchases', { 
+            filters: [{ column: 'user_id', value: user.id }],
+            select: 'item_id,item_type'
+          });
+          if (error) throw error;
+          // Guardamos las compras en un Set para una búsqueda rápida
+          const purchasesSet = new Set(data.map(p => `${p.item_type}:${p.item_id}`));
+          setUserPurchases(purchasesSet);
+        } catch (error) {
+          console.error('Error al cargar las compras del usuario:', error);
+        }
+      }
+    };
+    fetchUserPurchases();
+  }, [user]);
 
   // Función para iniciar sesión
   const login = async (email, password) => {
@@ -175,7 +198,10 @@ export const AuthProvider = ({ children }) => {
         } catch {
             return false;
         }
-    }
+    },
+    userHasPurchased: useCallback((itemId, itemType) => {
+      return userPurchases.has(`${itemType}:${itemId}`);
+    }, [userPurchases])
   };
 
   return (
