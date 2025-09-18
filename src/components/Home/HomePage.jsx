@@ -10,7 +10,7 @@ import Services from '../Services';
 import Testimonials from '../Testimonials';
 import JudicialNews from '../JudicialNews';
 import Newsletter from '../Newsletter/Newsletter';
-import ProcessSearch from '../ProcessSearch';
+import ProcessSearch from '../../pages/ProcessSearch';
 import SubscriptionPlans from '../Subscriptions/SubscriptionPlans';
 import SocialMediaIntegration from '../Social/SocialMediaIntegration';
 
