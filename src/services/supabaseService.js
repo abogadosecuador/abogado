@@ -74,7 +74,9 @@ const getSupabaseClient = () => {
 };
 
 // Exportamos una única instancia que se inicializará la primera vez que se importe.
-export const supabase = getSupabaseClient();
+// Se exporta la función para asegurar una inicialización diferida (lazy initialization).
+// Esto previene errores de 'race condition' al cargar la app.
+export const supabase = getSupabaseClient;
 
 // --- Servicios de Autenticación y Datos ---
 
@@ -83,32 +85,28 @@ export const supabase = getSupabaseClient();
  */
 export const authService = {
   async login(email, password) {
-    return supabase.auth.signInWithPassword({ email, password });
+    return getSupabaseClient().auth.signInWithPassword({ email, password });
   },
 
-  async register(email, password, userData = {}) {
-    return supabase.auth.signUp({ 
-      email, 
-      password, 
-      options: { data: userData } 
-    });
+  async register(email, password, metadata = {}) {
+    return getSupabaseClient().auth.signUp({ email, password, options: { data: metadata } });
   },
 
-  async signOut() {
-    return supabase.auth.signOut();
+  async logout() {
+    return getSupabaseClient().auth.signOut();
   },
 
-  async getSession() {
-    return supabase.auth.getSession();
+  async getUser() {
+    return getSupabaseClient().auth.getUser();
   },
 
   async getCurrentUser() {
-    const { data } = await supabase.auth.getUser();
+    const { data } = await getSupabaseClient().auth.getUser();
     return data.user;
   },
   
   onAuthStateChange(callback) {
-    return supabase.auth.onAuthStateChange(callback);
+    return getSupabaseClient().auth.onAuthStateChange(callback);
   }
 };
 
@@ -116,25 +114,34 @@ export const authService = {
  * dataService - Proporciona métodos para interactuar con la base de datos.
  */
 export const dataService = {
-  async getAll(table, options = {}) {
-    let query = supabase.from(table).select(options.select || '*');
-    // Aquí se pueden añadir más opciones como filtros, orden, etc.
+  async getAll(table, { filters = [], select = '*', order = null, limit = null }) {
+    let query = getSupabaseClient().from(table).select(select);
+    filters.forEach(f => { query = query.eq(f.column, f.value); });
+    if (order) query = query.order(order.column, { ascending: order.asc });
+    if (limit) query = query.limit(limit);
+    return query;
+  },
+
+  async get(table, { filters = [], select = '*', single = false }) {
+    let query = getSupabaseClient().from(table).select(select);
+    filters.forEach(f => { query = query.eq(f.column, f.value); });
+    if (single) query = query.single();
     return query;
   },
 
   async getById(table, id) {
-    return supabase.from(table).select('*').eq('id', id).single();
+    return getSupabaseClient().from(table).select('*').eq('id', id).single();
   },
 
   async create(table, data) {
-    return supabase.from(table).insert([data]).select();
+    return getSupabaseClient().from(table).insert(data).select().single();
   },
 
   async update(table, id, data) {
-    return supabase.from(table).update(data).eq('id', id).select();
+    return getSupabaseClient().from(table).update(data).eq('id', id).select().single();
   },
 
   async delete(table, id) {
-    return supabase.from(table).delete().eq('id', id);
+    return getSupabaseClient().from(table).delete().eq('id', id);
   }
 };
