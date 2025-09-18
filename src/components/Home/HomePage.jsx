@@ -15,7 +15,7 @@ import SubscriptionPlans from '../Subscriptions/SubscriptionPlans';
 import SocialMediaIntegration from '../Social/SocialMediaIntegration';
 
 // Usar nuestro HelmetWrapper seguro en lugar de Helmet directamente
-import HelmetWrapper from '../Common/HelmetWrapper';
+import SEO from '../Common/SEO';
 import { toast } from 'react-hot-toast';
 
 const HomePage = () => {
