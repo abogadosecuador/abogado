@@ -1,74 +1,73 @@
 import React, { useState, useEffect } from 'react';
-import Card from '../components/Card';
-import { ShoppingCartIcon, DownloadIcon } from '../components/icons/InterfaceIcons';
-import { Purchase } from '../types';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale/es';
+import { useAuth } from '../context/AuthContext';
+import { dataService } from '../services/supabaseService';
+import { ShoppingCart, Download, BookOpen, Briefcase, Award } from 'lucide-react';
 
-const USER_PURCHASES_KEY = 'user_purchases';
+const iconMap = {
+  course: <BookOpen className="h-6 w-6 text-blue-500" />,
+  service: <Briefcase className="h-6 w-6 text-green-500" />,
+  plan: <Award className="h-6 w-6 text-purple-500" />,
+  ebook: <BookOpen className="h-6 w-6 text-orange-500" />,
+  default: <ShoppingCart className="h-6 w-6 text-gray-500" />
+};
 
-const MyPurchasesPage: React.FC = () => {
-    const [purchases, setPurchases] = useState<Purchase[]>([]);
+const MyPurchasesPage = () => {
+  const [purchases, setPurchases] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
-    useEffect(() => {
-        const storedPurchases = localStorage.getItem(USER_PURCHASES_KEY);
-        if (storedPurchases) {
-            setPurchases(JSON.parse(storedPurchases));
-        }
-    }, []);
+  useEffect(() => {
+    const fetchPurchases = async () => {
+      if (!user) return;
+      try {
+        const { data, error } = await dataService.getAll('purchases', { filters: [{ column: 'user_id', value: user.id }] });
+        if (error) throw error;
+        setPurchases(data || []);
+      } catch (err) {
+        console.error('Error al cargar las compras:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPurchases();
+  }, [user]);
 
-    return (
-        <div className="space-y-6">
-            <header>
-                <h1 className="text-3xl font-bold flex items-center">
-                    <ShoppingCartIcon className="h-8 w-8 mr-3 text-[var(--accent-color)]"/> Mis Compras
-                </h1>
-                <p className="mt-1 text-[var(--muted-foreground)]">Aquí puedes ver el historial de todos tus productos y servicios adquiridos.</p>
-            </header>
+  if (loading) return <div className="text-center py-20">Cargando historial de compras...</div>;
 
-            <Card className="!p-0">
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-[var(--border)]">
-                        <thead className="bg-[var(--background)]">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase">Item</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase">Tipo</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase">Fecha de Compra</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase">Monto</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-[var(--card)] divide-y divide-[var(--border)]">
-                            {purchases.map(purchase => {
-                                const isDownloadable = ['ebook', 'masterclass'].includes(purchase.itemType);
-                                return (
-                                <tr key={purchase.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap font-medium">{purchase.itemName}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap capitalize text-sm text-[var(--muted-foreground)]">{purchase.itemType}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--muted-foreground)]">
-                                        {format(new Date(purchase.purchaseDate), 'd LLL, yyyy', { locale: es })}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap font-semibold">${purchase.amount.toFixed(2)}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                        {isDownloadable ? (
-                                            <button onClick={() => alert(`Simulando descarga de ${purchase.itemName}`)} className="flex items-center gap-1 text-[var(--accent-color)] hover:underline">
-                                                <DownloadIcon className="h-4 w-4" /> Descargar
-                                            </button>
-                                        ) : (
-                                            <span>-</span>
-                                        )}
-                                    </td>
-                                </tr>
-                            )})}
-                        </tbody>
-                    </table>
-                    {purchases.length === 0 && (
-                        <p className="text-center py-12 text-[var(--muted-foreground)]">No has realizado ninguna compra todavía.</p>
-                    )}
+  return (
+    <div className="space-y-6 p-4 md:p-6">
+      <header>
+        <h1 className="text-3xl font-bold flex items-center text-gray-800"><ShoppingCart className="h-8 w-8 mr-3 text-blue-600"/> Mis Compras</h1>
+        <p className="mt-1 text-gray-600">Tu historial de productos y servicios adquiridos.</p>
+      </header>
+
+      {purchases.length > 0 ? (
+        <div className="space-y-4">
+          {purchases.map(purchase => (
+            <div key={purchase.id} className="bg-white rounded-lg shadow-sm p-4 flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                {iconMap[purchase.item_type] || iconMap.default}
+                <div>
+                  <p className="font-semibold text-gray-900">{purchase.item_name}</p>
+                  <p className="text-sm text-gray-500">{new Date(purchase.created_at).toLocaleDateString()}</p>
                 </div>
-            </Card>
+              </div>
+              <div className="text-right">
+                <p className="font-bold text-lg text-gray-800">${purchase.amount.toFixed(2)}</p>
+                {['ebook', 'masterclass'].includes(purchase.item_type) && (
+                  <a href={purchase.download_url || '#'} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline inline-flex items-center mt-1">
+                    <Download size={14} className="mr-1" /> Descargar
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
-    );
+      ) : (
+        <div className="text-center py-16 bg-white rounded-lg shadow-sm"><p className="text-gray-500">No has realizado ninguna compra todavía.</p></div>
+      )}
+    </div>
+  );
 };
 
 export default MyPurchasesPage;

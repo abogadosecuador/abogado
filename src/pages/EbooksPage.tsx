@@ -1,57 +1,49 @@
 import React, { useState, useEffect } from 'react';
-import Card from '../components/Card';
-import { BookOpenIcon } from '../components/icons/InterfaceIcons';
-import { CatalogItem } from '../types';
+import { dataService } from '../services/supabaseService';
+import ProductCard from '../components/ProductCard';
+import { BookOpen } from 'lucide-react';
 
-const CATALOG_KEY = 'nexuspro_catalog';
+const EbooksPage = () => {
+  const [ebooks, setEbooks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-const EbooksPage: React.FC<{onNavigate: (page: string) => void}> = ({onNavigate}) => {
-    const [ebooks, setEbooks] = useState<CatalogItem[]>([]);
+  useEffect(() => {
+    const fetchEbooks = async () => {
+      try {
+        // Asumimos que los ebooks tienen una categoría específica en la tabla 'products'
+        const { data, error } = await dataService.getAll('products', { filters: [{ column: 'category', value: 'Ebook' }] });
+        if (error) throw error;
+        setEbooks(data.map(item => ({ ...item, type: 'Ebook' })) || []);
+      } catch (err) {
+        console.error('Error al cargar los ebooks:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEbooks();
+  }, []);
 
-    useEffect(() => {
-        const catalogString = localStorage.getItem(CATALOG_KEY);
-        if (catalogString) {
-            const allItems: CatalogItem[] = JSON.parse(catalogString);
-            setEbooks(allItems.filter(item => item.type === 'ebook' && item.status === 'active'));
-        }
-    }, []);
+  if (loading) return <div className="text-center py-20">Cargando ebooks...</div>;
 
-    return (
-        <div className="space-y-8 p-4 sm:p-8 max-w-5xl mx-auto">
-            <header className="text-center">
-                <h1 className="text-4xl font-bold text-gray-900 dark:text-white flex items-center justify-center font-serif">
-                    <BookOpenIcon className="h-10 w-10 mr-4 text-[var(--primary)]"/> eBooks y Guías Legales
-                </h1>
-                <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">Recursos descargables para potenciar tu conocimiento.</p>
-            </header>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                {ebooks.map(ebook => (
-                     <Card key={ebook.id} className="flex flex-col group cursor-pointer" onClick={() => onNavigate('catalogo')}>
-                        <img src={ebook.imageUrl} alt={ebook.name} className="w-full h-48 object-cover rounded-t-xl" />
-                        <div className="p-4 flex flex-col flex-grow">
-                            <h3 className="text-lg font-bold group-hover:text-[var(--primary)] transition-colors">{ebook.name}</h3>
-                            <div className="mt-4 pt-4 border-t border-[var(--border)] flex justify-between items-center">
-                                <span className="font-bold text-xl">${ebook.price.toFixed(2)}</span>
-                                <span className="px-4 py-2 text-sm font-semibold text-white bg-[var(--primary)] rounded-md">
-                                    Ver en Catálogo
-                                </span>
-                            </div>
-                        </div>
-                    </Card>
-                ))}
-            </div>
-             <Card>
-                <div className="text-center py-8">
-                     <h2 className="text-xl font-semibold">Explora Nuestra Colección Completa</h2>
-                    <p className="text-gray-500 mt-2">Visita nuestro catálogo universal para ver todos los ebooks, cursos y servicios disponibles.</p>
-                     <button onClick={() => onNavigate('catalogo')} className="mt-4 px-6 py-2 bg-[var(--primary)] text-[var(--primary-foreground)] font-semibold rounded-md hover:opacity-90">
-                        Ir al Catálogo
-                    </button>
-                </div>
-            </Card>
-        </div>
-    );
+  return (
+    <div className="bg-gray-50 min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <header className="text-center mb-12">
+          <BookOpen className="mx-auto h-12 w-12 text-blue-600" />
+          <h1 className="mt-4 text-5xl font-bold text-gray-900">Ebooks y Guías Legales</h1>
+          <p className="mt-4 text-xl text-gray-600">Recursos descargables para potenciar tu conocimiento.</p>
+        </header>
+
+        {ebooks.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {ebooks.map(ebook => <ProductCard key={ebook.id} item={ebook} />)}
+          </div>
+        ) : (
+          <div className="text-center py-16"><h3 className="text-xl font-semibold">No hay ebooks disponibles en este momento.</h3></div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default EbooksPage;
