@@ -107,5 +107,3 @@ const PayPalButton = ({ amount, metadata = {} }) => {
 };
 
 export default PayPalButton;
-
-export default PayPalButton;
