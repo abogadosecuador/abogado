@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import PrivateRoute from '../components/routing/PrivateRoute';
 
 // Componentes lazy existentes en src/pages
@@ -14,7 +14,8 @@ const Blog = React.lazy(() => import('../pages/Blog'));
 const CatalogPage = React.lazy(() => import('../pages/CatalogPage'));
 // Páginas adicionales
 const CalendarPage = React.lazy(() => import('../pages/CalendarPage'));
-const ProcessSearch = React.lazy(() => import('../components/ProcessSearch'));
+const ProcessSearch = React.lazy(() => import('../pages/ProcessSearch'));
+const NotFoundPage = React.lazy(() => import('../pages/NotFoundPage'));
 
 // Fallback genérico
 const Loading = () => <div className="loading-spinner">Cargando...</div>;
@@ -24,41 +25,36 @@ const PublicLayout = React.lazy(() => import('../layouts/PublicLayout'));
 
 const AppRoutes: React.FC = () => {
   return (
-    <Router>
-      <React.Suspense fallback={<Loading />}>
-        <Routes>
-          {/* Rutas públicas */}
-          <Route path="/" element={<PublicLayout />}> 
-            <Route index element={<HomePage />} />
-            <Route path="sobre-nosotros" element={<AboutPage />} />
-            <Route path="about" element={<AboutPage />} />
-            <Route path="servicios" element={<ServicesPage />} />
-            <Route path="contact" element={<ContactPage />} />
-            {/* Alias para compatibilidad */}
-            <Route path="contacto" element={<ContactPage />} />
-            <Route path="login" element={<LoginPage />} />
-            <Route path="registro" element={<RegisterPage />} />
-            <Route path="blog" element={<Blog />} />
-            <Route path="catalogo" element={<CatalogPage />} />
-            <Route path="calendario" element={<CalendarPage />} />
-            <Route path="consultas" element={<ProcessSearch />} />
-          </Route>
+    <React.Suspense fallback={<Loading />}>
+      <Routes>
+        {/* Rutas públicas anidadas bajo PublicLayout */}
+        <Route path="/" element={<PublicLayout />}>
+          <Route index element={<HomePage />} />
+          <Route path="sobre-nosotros" element={<AboutPage />} />
+          <Route path="servicios" element={<ServicesPage />} />
+          <Route path="contacto" element={<ContactPage />} />
+          <Route path="login" element={<LoginPage />} />
+          <Route path="registro" element={<RegisterPage />} />
+          <Route path="blog" element={<Blog />} />
+          <Route path="catalogo" element={<CatalogPage />} />
+          <Route path="calendario" element={<CalendarPage />} />
+          <Route path="consultas" element={<ProcessSearch />} />
+        </Route>
 
-          {/* Rutas privadas */}
-          <Route
-            path="/dashboard/*"
-            element={
-              <PrivateRoute>
-                <DashboardPage />
-              </PrivateRoute>
-            }
-          />
+        {/* Rutas privadas */}
+        <Route
+          path="/dashboard/*"
+          element={
+            <PrivateRoute>
+              <DashboardPage />
+            </PrivateRoute>
+          }
+        />
 
-          {/* 404 genérico: reutilizamos HomePage o una NotFound si existe */}
-          <Route path="*" element={<HomePage />} />
-        </Routes>
-      </React.Suspense>
-    </Router>
+        {/* Ruta para la página 404 */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </React.Suspense>
   );
 };
 

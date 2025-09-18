@@ -47,7 +47,7 @@ const ProcessSearch = () => {
       
       if (error) throw error;
       // Ordenar los resultados manualmente si es necesario
-      const sortedData = data ? [...data].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5) : [];
+      const sortedData = Array.isArray(data) ? [...data].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5) : [];
       setRecentSearches(sortedData || []);
     } catch (error) {
       console.error('Error al cargar búsquedas recientes:', error);

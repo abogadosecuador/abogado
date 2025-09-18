@@ -56,7 +56,7 @@ const AboutPage = () => {
               transition={{ delay: 0.5, duration: 0.5 }}
             >
               <div className="rounded-lg overflow-hidden shadow-2xl">
-                <img src="/images/abogado-wilson-portrait.jpg" alt="Wilson Alexander Ipiales Guerru00f3n" className="w-full h-auto" />
+                <img src="https://via.placeholder.com/400x500.png?text=Abogado+Wilson+Ipiales" alt="Retrato de Wilson Alexander Ipiales Guerru00f3n" className="w-full h-auto" />
               </div>
             </motion.div>
           </div>

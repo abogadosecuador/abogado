@@ -13,21 +13,12 @@ if (typeof window !== 'undefined' && !window.React) {
   window.React = React;
 }
 
-// Importación condicional para evitar errores si react-helmet-async falla
-let Helmet;
-try {
-  // Intentar importar de react-helmet-async
-  Helmet = require('react-helmet-async').Helmet;
-} catch (error) {
-  // Si falla, crear un componente de respaldo que no haga nada
-  console.warn('Error al cargar react-helmet-async, usando componente de respaldo');
-  Helmet = ({ children }) => <>{children}</>;
-}
+import { Helmet } from 'react-helmet-async';
 
 /**
  * HelmetWrapper - Wrapper seguro para Helmet que previene errores en Cloudflare Workers
  */
-const HelmetWrapper = ({ title, description, image, url, children }) => {
+const SEO = ({ title, description, image, url, children }) => {
   // Verificamos si estamos en un entorno donde podría fallar
   const isBrowser = typeof window !== 'undefined';
   const isSafeEnvironment = isBrowser && typeof document !== 'undefined';
@@ -73,4 +64,4 @@ const HelmetWrapper = ({ title, description, image, url, children }) => {
   }
 };
 
-export default HelmetWrapper;
+export default SEO;

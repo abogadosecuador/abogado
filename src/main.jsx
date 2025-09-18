@@ -7,6 +7,8 @@ import { AuthProvider } from './context/AuthContext.jsx';
 import { CartProvider } from './context/CartContext.jsx';
 import { ModuleProvider } from './context/ModuleContext.jsx';
 import { ThemeProvider } from './context/ThemeContext.jsx';
+import { HelmetProvider } from 'react-helmet-async';
+import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import './index.css';
 
 async function loadConfig() {
@@ -44,19 +46,23 @@ async function initializeApp() {
           <CartProvider>
             <ModuleProvider>
               <ThemeProvider>
-                <BrowserRouter>
-                  <App />
-                  <Toaster 
-                    position="top-right"
-                    toastOptions={{
-                      duration: 4000,
-                      style: {
-                        background: '#363636',
-                        color: '#fff',
-                      },
-                    }}
-                  />
-                </BrowserRouter>
+                <PayPalScriptProvider options={{ "client-id": window.__APP_CONFIG__?.paypalClientId || "" }}>
+                  <HelmetProvider>
+                    <BrowserRouter>
+                      <App />
+                      <Toaster 
+                        position="top-right"
+                        toastOptions={{
+                          duration: 4000,
+                          style: {
+                            background: '#363636',
+                            color: '#fff',
+                          },
+                        }}
+                      />
+                    </BrowserRouter>
+                  </HelmetProvider>
+                </PayPalScriptProvider>
               </ThemeProvider>
             </ModuleProvider>
           </CartProvider>

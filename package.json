@@ -25,6 +25,7 @@
     "@headlessui/react": "^2.2.2",
     "@heroicons/react": "^2.2.0",
     "@notionhq/client": "^4.0.2",
+    "@paypal/react-paypal-js": "^8.9.1",
     "@prisma/client": "^5.10.0",
     "@supabase/supabase-js": "^2.39.0",
     "@tailwindcss/aspect-ratio": "^0.4.2",

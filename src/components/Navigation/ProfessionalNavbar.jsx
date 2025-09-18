@@ -39,6 +39,15 @@ function ProfessionalNavbar() {
   const { user, logout } = useAuth();
   const { items, total, removeFromCart } = useCart();
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  if (!hasMounted) {
+    return null; // O un skeleton/loader si se prefiere
+  }
 
   const isActive = (href) => {
     if (href === '/') return location.pathname === '/';

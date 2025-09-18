@@ -36,7 +36,13 @@ export async function onRequest(context) {
     // Determinar si es una solicitud a Supabase y construir la URL
     if (supabasePath) {
       // URL base de Supabase desde variables de entorno o configuración
-      const supabaseUrl = 'https://phzldiaohelbyobhjrnc.supabase.co';
+      const supabaseUrl = context.env.SUPABASE_URL;
+      if (!supabaseUrl) {
+        return new Response(JSON.stringify({ error: 'La variable de entorno SUPABASE_URL no está configurada' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      }
       targetUrl = `${supabaseUrl}${supabasePath}`;
       console.log(`Redirigiendo solicitud a: ${targetUrl}`);
     } else {
@@ -67,7 +73,13 @@ export async function onRequest(context) {
     requestInit.headers.delete('content-length');
     
     // Asegurar que tenemos el encabezado apikey para Supabase
-    const supabaseKey = 'sbp_db5898ecc094d37ec87562399efe3833e63ab20f';
+    const supabaseKey = context.env.SUPABASE_ANON_KEY;
+    if (!supabaseKey) {
+      return new Response(JSON.stringify({ error: 'La variable de entorno SUPABASE_ANON_KEY no está configurada' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      });
+    }
     if (!requestInit.headers.has('apikey')) {
       requestInit.headers.set('apikey', supabaseKey);
     }

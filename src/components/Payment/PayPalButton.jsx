@@ -1,127 +1,111 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
+import { toast } from 'react-hot-toast';
 import { useCart } from '../../context/CartContext';
 
 const PayPalButton = ({ amount, metadata = {} }) => {
-  const paypalRef = useRef();
   const navigate = useNavigate();
   const { clearCart } = useCart();
-  const paymentInfoRef = useRef({ payment_id: null });
+  const [{ isPending }] = usePayPalScriptReducer();
+  const paymentInfoRef = useRef({}); // Almacena IDs entre pasos
 
-  useEffect(() => {
-    let script;
-    let cancelled = false;
-
-    async function loadAndRender() {
-      try {
-        // Obtener Client ID de configuración del backend
-        const cfgRes = await fetch('/api/config');
-        const cfgJson = await cfgRes.json();
-        const clientId = cfgJson?.data?.paypal_client_id;
-        if (!clientId) throw new Error('PayPal Client ID no configurado');
-
-        // Cargar SDK de PayPal con el Client ID desde el backend
-        script = document.createElement('script');
-        script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=USD&components=buttons`;
-        script.async = true;
-        script.onload = () => !cancelled && initButtons();
-        script.onerror = () => console.error('No se pudo cargar el SDK de PayPal');
-        document.body.appendChild(script);
-      } catch (e) {
-        console.error('Config/PayPal error:', e);
+  const createOrder = async (data, actions) => {
+    const promise = fetch('/api/payments/create-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: Number(amount),
+        currency: 'USD',
+        description: 'Servicios legales - Abg. Wilson Ipiales',
+        metadata,
+      }),
+    })
+    .then(res => res.json())
+    .then(orderData => {
+      if (!orderData?.data?.paypal_order_id) {
+        throw new Error(orderData?.error || 'No se pudo crear la orden en el servidor.');
       }
-    }
+      // Guardamos el ID de nuestro sistema para la captura
+      paymentInfoRef.current.payment_id = orderData.data.payment_id;
+      return orderData.data.paypal_order_id;
+    });
 
-    function initButtons() {
-      if (!window.paypal) return;
+    toast.promise(promise, {
+      loading: 'Creando orden de pago...',
+      success: 'Orden creada. Por favor, complete el pago en la ventana de PayPal.',
+      error: (err) => `Error al crear la orden: ${err.message}`,
+    });
 
-      window.paypal.Buttons({
-        createOrder: async () => {
-          // Crear orden segura en el backend y registrar el intento de pago (historial)
-          const res = await fetch('/api/payments/create-order', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              amount: Number(amount),
-              currency: 'USD',
-              description: 'Servicios legales - Abg. Wilson Ipiales',
-              return_url: `${window.location.origin}/gracias`,
-              cancel_url: `${window.location.origin}/`,
-              metadata,
-            })
-          });
-          const data = await res.json();
-          if (!res.ok || !data?.data?.paypal_order_id) {
-            throw new Error(data?.error || 'No se pudo crear la orden de PayPal');
-          }
-          // Guardamos el payment_id para la captura posterior
-          paymentInfoRef.current.payment_id = data.data.payment_id;
-          return data.data.paypal_order_id; // El SDK espera devolver el order id
+    return promise;
+  };
+
+  const onApprove = async (data, actions) => {
+    const promise = fetch('/api/payments/capture', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        order_id: data.orderID,
+        payment_id: paymentInfoRef.current.payment_id,
+      }),
+    })
+    .then(res => res.json())
+    .then(captureData => {
+      if (captureData.error) {
+        throw new Error(captureData.error);
+      }
+      clearCart();
+      navigate('/gracias', {
+        replace: true,
+        state: {
+          paymentId: captureData.data?.transaction_id || data.orderID,
+          amount: captureData.data?.amount || amount,
+          status: 'completed',
         },
-        onApprove: async (data, actions) => {
-          try {
-            // Capturar el pago en el backend (fuente de verdad)
-            const captureRes = await fetch('/api/payments/capture', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                order_id: data.orderID,
-                payment_id: paymentInfoRef.current.payment_id,
-              })
-            });
-            const captureJson = await captureRes.json();
-            if (!captureRes.ok) {
-              throw new Error(captureJson?.error || 'Error capturando el pago');
-            }
+      });
+      return captureData;
+    });
 
-            // Limpiar carrito sólo tras captura exitosa
-            clearCart();
+    toast.promise(promise, {
+      loading: 'Procesando pago...',
+      success: '¡Pago completado con éxito! Gracias por su compra.',
+      error: (err) => `Error al procesar el pago: ${err.message}`,
+    });
 
-            // Redirigir a página de éxito existente en rutas
-            navigate('/gracias', {
-              state: {
-                paymentId: captureJson?.data?.transaction_id || data.orderID,
-                amount: captureJson?.data?.amount || amount,
-                status: captureJson?.data?.status || 'completed'
-              }
-            });
-          } catch (err) {
-            console.error('Error al procesar la captura:', err);
-            alert('Hubo un problema al confirmar el pago. No se ha cobrado. Intente nuevamente.');
-          }
-        },
-        onError: (err) => {
-          console.error('Error PayPal:', err);
-          alert('Ocurrió un error con PayPal. Por favor, inténtelo más tarde.');
-        }
-      }).render(paypalRef.current);
-    }
+    return promise;
+  };
 
-    loadAndRender();
+  const onError = (err) => {
+    console.error('Error de PayPal:', err);
+    toast.error('Ocurrió un error con PayPal. Por favor, inténtelo de nuevo.');
+  };
 
-    return () => {
-      cancelled = true;
-      if (script) document.body.removeChild(script);
-    };
-  }, [amount, navigate, clearCart]);
-
-  
+  const onCancel = (data) => {
+    console.log('Pago cancelado:', data);
+    toast.error('El pago ha sido cancelado.');
+  };
 
   return (
     <div className="mt-4">
-      <div className="bg-gray-50 p-4 rounded-lg mb-4">
-        <p className="text-sm text-gray-700 mb-2">Detalles del pago:</p>
-        <p className="text-lg font-semibold">${amount} USD</p>
-        <p className="text-xs text-gray-500 mt-1">Pagos seguros procesados por PayPal</p>
-      </div>
-      
-      <div ref={paypalRef} className="mt-4"></div>
-      
+      {isPending ? (
+        <div className="text-center p-4">Cargando botones de pago...</div>
+      ) : (
+        <PayPalButtons 
+          style={{ layout: 'vertical' }}
+          createOrder={createOrder}
+          onApprove={onApprove}
+          onError={onError}
+          onCancel={onCancel}
+          disabled={!amount || amount <= 0}
+        />
+      )}
       <p className="text-xs text-gray-500 mt-4 text-center">
         Al completar el pago, usted acepta nuestros términos y condiciones.
       </p>
     </div>
   );
 };
+
+export default PayPalButton;
 
 export default PayPalButton;
