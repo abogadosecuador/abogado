@@ -1,85 +1,167 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaPhoneAlt, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa';
-import { toast } from 'react-hot-toast';
-import { dataService } from '../../services/supabaseService';
+import { FaFacebook, FaTwitter, FaLinkedin, FaInstagram, FaWhatsapp, FaEnvelope, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-  const [newsletterEmail, setNewsletterEmail] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [config, setConfig] = useState({});
-
-  useEffect(() => {
-    if (window.__APP_CONFIG__) {
-      setConfig({
-        address: window.__APP_CONFIG__.CONTACT_ADDRESS || '',
-        phone: window.__APP_CONFIG__.WHATSAPP_NUMBER || '',
-        email: window.__APP_CONFIG__.CONTACT_EMAIL || '',
-        facebookUrl: window.__APP_CONFIG__.FACEBOOK_URL,
-        twitterUrl: window.__APP_CONFIG__.TWITTER_URL,
-        instagramUrl: window.__APP_CONFIG__.INSTAGRAM_URL,
-        linkedinUrl: window.__APP_CONFIG__.LINKEDIN_URL,
-      });
-    }
-  }, []);
-
-  const handleNewsletterSubmit = async (e) => {
-    e.preventDefault();
-    if (!newsletterEmail) {
-      toast.error('Por favor, ingrese un correo electrónico.');
-      return;
-    }
-    setSubmitting(true);
-    const promise = dataService.create('newsletter_subscriptions', { email: newsletterEmail });
-    toast.promise(promise, {
-      loading: 'Suscribiendo...',
-      success: '¡Gracias por suscribirte!',
-      error: 'No se pudo suscribir. Inténtalo de nuevo.'
-    });
-    await promise;
-    setNewsletterEmail('');
-    setSubmitting(false);
-  };
 
   return (
-    <footer className="bg-gray-900 text-gray-100 pt-16 pb-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-          <div>
-            <h3 className="text-xl font-bold mb-4 text-white">Contacto</h3>
-            <ul className="space-y-3">
-              {config.address && <li className="flex items-start"><FaMapMarkerAlt className="text-blue-400 mt-1 mr-3" /><span>{config.address}</span></li>}
-              {config.phone && <li className="flex items-center"><FaPhoneAlt className="text-blue-400 mr-3" /><a href={`tel:${config.phone}`} className="hover:text-blue-400">{config.phone}</a></li>}
-              {config.email && <li className="flex items-center"><FaEnvelope className="text-blue-400 mr-3" /><a href={`mailto:${config.email}`} className="hover:text-blue-400">{config.email}</a></li>}
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-xl font-bold mb-4 text-white">Enlaces</h3>
-            <ul className="space-y-2">
-              <li><Link to="/" className="hover:text-blue-400">Inicio</Link></li>
-              <li><Link to="/servicios" className="hover:text-blue-400">Servicios</Link></li>
-              <li><Link to="/catalogo" className="hover:text-blue-400">Catálogo</Link></li>
-              <li><Link to="/blog" className="hover:text-blue-400">Blog</Link></li>
-              <li><Link to="/contacto" className="hover:text-blue-400">Contacto</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-xl font-bold mb-4 text-white">Suscríbete</h3>
-            <form onSubmit={handleNewsletterSubmit}>
-              <input type="email" placeholder="Tu correo" value={newsletterEmail} onChange={(e) => setNewsletterEmail(e.target.value)} className="w-full px-4 py-2 rounded bg-gray-800 border border-gray-700" required />
-              <button type="submit" disabled={submitting} className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded">{submitting ? 'Enviando...' : 'Suscribirse'}</button>
-            </form>
-            <div className="flex mt-4 space-x-4">
-              {config.facebookUrl && <a href={config.facebookUrl}><FaFacebook /></a>}
-              {config.twitterUrl && <a href={config.twitterUrl}><FaTwitter /></a>}
-              {config.instagramUrl && <a href={config.instagramUrl}><FaInstagram /></a>}
-              {config.linkedinUrl && <a href={config.linkedinUrl}><FaLinkedin /></a>}
+    <footer className="bg-gradient-to-b from-gray-900 to-black text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {/* Company Info */}
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-xl">AE</span>
+              </div>
+              <span className="text-xl font-bold">AbogadosEcuador</span>
+            </div>
+            <p className="text-gray-400 text-sm">
+              Servicios legales profesionales con más de 15 años de experiencia. 
+              Tu confianza, nuestra prioridad.
+            </p>
+            <div className="flex space-x-4">
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" 
+                className="text-gray-400 hover:text-blue-500 transition-colors">
+                <FaFacebook className="w-5 h-5" />
+              </a>
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer"
+                className="text-gray-400 hover:text-blue-400 transition-colors">
+                <FaTwitter className="w-5 h-5" />
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"
+                className="text-gray-400 hover:text-blue-600 transition-colors">
+                <FaLinkedin className="w-5 h-5" />
+              </a>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
+                className="text-gray-400 hover:text-pink-500 transition-colors">
+                <FaInstagram className="w-5 h-5" />
+              </a>
             </div>
           </div>
+
+          {/* Quick Links */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Enlaces Rápidos</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/productos/servicios" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Servicios Legales
+                </Link>
+              </li>
+              <li>
+                <Link to="/productos/consultoria" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Consultoría
+                </Link>
+              </li>
+              <li>
+                <Link to="/cursos" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Cursos Online
+                </Link>
+              </li>
+              <li>
+                <Link to="/blog" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Blog Legal
+                </Link>
+              </li>
+              <li>
+                <Link to="/comunidad" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Comunidad
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Legal</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/politicas/privacidad" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Política de Privacidad
+                </Link>
+              </li>
+              <li>
+                <Link to="/politicas/terminos" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Términos y Condiciones
+                </Link>
+              </li>
+              <li>
+                <Link to="/politicas/cookies" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Política de Cookies
+                </Link>
+              </li>
+              <li>
+                <Link to="/politicas/reembolso" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Política de Reembolso
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Contacto</h3>
+            <ul className="space-y-3">
+              <li className="flex items-start space-x-3">
+                <FaMapMarkerAlt className="w-4 h-4 text-gray-400 mt-1 flex-shrink-0" />
+                <span className="text-gray-400 text-sm">
+                  Av. Principal 123, Quito, Ecuador
+                </span>
+              </li>
+              <li className="flex items-center space-x-3">
+                <FaPhone className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <a href="tel:+593999999999" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  +593 99 999 9999
+                </a>
+              </li>
+              <li className="flex items-center space-x-3">
+                <FaWhatsapp className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <a href="https://wa.me/593999999999" target="_blank" rel="noopener noreferrer" 
+                  className="text-gray-400 hover:text-green-500 transition-colors text-sm">
+                  WhatsApp
+                </a>
+              </li>
+              <li className="flex items-center space-x-3">
+                <FaEnvelope className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <a href="mailto:info@abogadosecuador.com" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  info@abogadosecuador.com
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
-        <div className="border-t border-gray-700 pt-6 text-center">
-          <p>&copy; {currentYear} Abg. Wilson Alexander Ipiales Guerron. Todos los derechos reservados.</p>
+
+        {/* Newsletter */}
+        <div className="mt-12 pt-8 border-t border-gray-800">
+          <div className="max-w-md mx-auto text-center">
+            <h3 className="text-lg font-semibold mb-2">Suscríbete a nuestro Newsletter</h3>
+            <p className="text-gray-400 text-sm mb-4">
+              Recibe las últimas noticias legales y actualizaciones directamente en tu correo.
+            </p>
+            <form className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="email"
+                placeholder="Tu correo electrónico"
+                className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+                required
+              />
+              <button
+                type="submit"
+                className="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium"
+              >
+                Suscribir
+              </button>
+            </form>
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="mt-8 pt-8 border-t border-gray-800 text-center">
+          <p className="text-gray-400 text-sm">
+            © {currentYear} AbogadosEcuador. Todos los derechos reservados.
+          </p>
         </div>
       </div>
     </footer>
