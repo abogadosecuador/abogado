@@ -1,0 +1,31 @@
+{
+  "api": {
+    "baseUrl": "https://abogados.ecuador.workers.dev/api",
+    "version": "3.0.0",
+    "timeout": 30000
+  },
+  "supabase": {
+    "url": "https://kbybhgxqdefuquybstqk.supabase.co",
+    "anonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWJoZ3hxZGVmdXF1eWJzdHFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NjAwODMsImV4cCI6MjA3MzEzNjA4M30.s1knFM9QXd8CH8TC0IOtBBBvb-qm2XYl_VlhVb-CqcE"
+  },
+  "cloudinary": {
+    "cloudName": "dg3s7tqoj",
+    "apiKey": "673776954212897"
+  },
+  "paypal": {
+    "clientId": "AWxKgr5n7ex5Lc3fDBOooaVHLgcAB-KCrYXgCmit9DpNXFIuBa6bUypYFjr-hAqARlILGxk_rRTsBZeS",
+    "mode": "live"
+  },
+  "contact": {
+    "email": "ecuadorabogado1@gmail.com",
+    "whatsapp": "+59398835269"
+  },
+  "n8n": {
+    "webhookUrl": "https://n8n-latest-hurl.onrender.com"
+  },
+  "app": {
+    "name": "Abogados Ecuador",
+    "version": "3.0.0",
+    "environment": "production"
+  }
+}
