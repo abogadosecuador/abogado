@@ -9,13 +9,13 @@ const ContactPage = React.lazy(() => import('../pages/ContactPage'));
 const LoginPage = React.lazy(() => import('../pages/LoginPageProfessional'));
 const RegisterPage = React.lazy(() => import('../pages/RegisterPage'));
 const DashboardPage = React.lazy(() => import('../pages/DashboardPage'));
-const Blog = React.lazy(() => import('../pages/Blog'));
+const Blog = React.lazy(() => import('../pages/Blog.jsx'));
 const CatalogPage = React.lazy(() => import('../pages/CatalogPage'));
 const MasterclassPage = React.lazy(() => import('../pages/MasterclassPage'));
 // Páginas adicionales
 const CalendarPage = React.lazy(() => import('../pages/CalendarPage'));
-const ProcessSearch = React.lazy(() => import('../pages/ProcessSearch'));
-const NotFoundPage = React.lazy(() => import('../pages/NotFoundPage'));
+const ProcessSearch = React.lazy(() => import('../pages/ProcessSearch.jsx'));
+const NotFoundPage = React.lazy(() => import('../pages/NotFoundPage.jsx'));
 
 // Fallback genérico
 const Loading = () => <div className="loading-spinner">Cargando...</div>;
@@ -37,7 +37,7 @@ const AppRoutes: React.FC = () => {
           <Route path="registro" element={<RegisterPage />} />
           <Route path="blog" element={<Blog />} />
           <Route path="catalogo" element={<CatalogPage />} />
-          <Route path="calendario" element={<CalendarPage />} />
+          <Route path="calendario" element={<CalendarPage onNavigate={() => {}} isLoggedIn={false} userRole="user" />} />
           <Route path="consultas" element={<ProcessSearch />} />
           <Route path="masterclass" element={<MasterclassPage />} />
         </Route>
