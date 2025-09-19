@@ -1,13 +1,6 @@
 name = "abogados-ecuador"
-main = "src/worker.js"
 compatibility_date = "2025-01-01"
 account_id = "70661c46051942965565a5c976219dde"
-
-[build]
-command = "npm run build"
-
-[site]
-bucket = "./dist"
 
 [[kv_namespaces]]
 binding = "ABOGADO_WILSON_KV"
