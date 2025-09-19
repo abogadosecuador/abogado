@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ScaleIcon, UserGroupIcon, CarIcon, BuildingOfficeIcon, HeartIcon, DocumentTextIcon, ClockIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { ScaleIcon, UserGroupIcon, TruckIcon, BuildingOfficeIcon, HeartIcon, DocumentTextIcon, ClockIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
 import { dataService } from '../services/supabaseService';
 
 const iconMap = {
   civil: ScaleIcon,
   penal: UserGroupIcon,
-  transito: CarIcon,
+  transito: TruckIcon,
   laboral: BuildingOfficeIcon,
   comercial: DocumentTextIcon,
   familia: HeartIcon,
