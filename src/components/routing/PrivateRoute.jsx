@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { authService } from '../../services/apiService';
+import { authService } from '../../services/supabaseService';
 
 const PrivateRoute = ({ children }) => {
   const location = useLocation();
@@ -16,15 +16,21 @@ const PrivateRoute = ({ children }) => {
       return;
     }
     (async () => {
-      const res = await authService.getCurrentUser();
-      // res: { data, error } shape from axios interceptor wrapper
-      if (mounted) {
-        if (res?.data && !res?.error) {
-          setAuthorized(true);
-        } else {
-          setAuthorized(false);
+      try {
+        const res = await authService.getUser();
+        if (mounted) {
+          if (res?.data?.user) {
+            setAuthorized(true);
+          } else {
+            setAuthorized(false);
+          }
+          setChecking(false);
         }
-        setChecking(false);
+      } catch (error) {
+        if (mounted) {
+          setAuthorized(false);
+          setChecking(false);
+        }
       }
     })();
     return () => { mounted = false; };

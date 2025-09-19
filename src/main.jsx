@@ -13,19 +13,12 @@ import './index.css';
 
 async function loadConfig() {
   try {
-    const res = await fetch('/api/config', { headers: { 'Accept': 'application/json' } });
-    if (!res.ok) throw new Error('No se pudo cargar configuración');
-    const cfg = await res.json();
-    if (!cfg?.data?.supabase_url || !cfg?.data?.supabase_anon_key) throw new Error('Config incompleta');
+    // Configuración directa sin API
     window.__APP_CONFIG__ = {
-      version: cfg.data.app_version || '3.0.0',
-      environment: 'production',
-      apiUrl: '/api',
-      supabaseUrl: cfg.data.supabase_url,
-      supabaseKey: cfg.data.supabase_anon_key,
-      paypalClientId: cfg.data.paypal_client_id || '',
-      appUrl: cfg.data.app_url || location.origin
+      supabaseUrl: 'https://kbybhgxqdefuquybstqk.supabase.co',
+      supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWJoZ3hxZGVmdXF1eWJzdHFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NjAwODMsImV4cCI6MjA3MzEzNjA4M30.s1knFM9QXd8CH8TC0IOtBBBvb-qm2XYl_VlhVb-CqcE'
     };
+    return;
   } catch (e) {
     console.error('Error cargando config:', e);
     // fallback mínimo para no romper la app
