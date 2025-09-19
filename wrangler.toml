@@ -1,8 +1,7 @@
 name = "abogados-ecuador"
-main = "src/worker.ts"
+main = "src/worker.js"
 compatibility_date = "2025-01-01"
 account_id = "70661c46051942965565a5c976219dde"
-workers_dev = true
 
 [build]
 command = "npm run build"
@@ -19,9 +18,6 @@ binding = "ABOGADO_WILSON_DB"
 database_name = "abogadosecuador"
 database_id = "c4e5e40d-ade6-4486-ac85-4a0b9a1d7b4f"
 
-[triggers]
-crons = [ "0 5 * * *" ]
-
 [vars]
 ENVIRONMENT = "production"
 CORS_ORIGIN = "*"
@@ -34,9 +30,7 @@ CONTACT_EMAIL = "Wifirmalegal@gmail.com"
 CLOUDINARY_CLOUD_NAME = "dg3s7tqoj"
 APP_URL = "https://abogados.ecuador.workers.dev"
 API_URL = "https://abogados.ecuador.workers.dev/api"
-PAYPAL_MODE = "live" # "sandbox" o "live"
-# Public client ID (no secreto). Configure el de SANDBOX o LIVE según el modo.
+PAYPAL_MODE = "live"
 PAYPAL_CLIENT_ID = "AWxKgr5n7ex5Lc3fDBOooaVHLgcAB-KCrYXgCmit9DpNXFIuBa6bUypYFjr-hAqARlILGxk_rRTsBZeS"
-# Opcional: forzar base API; normalmente no es necesario si usa PAYPAL_MODE
-# PAYPAL_API_BASE = "https://api-m.paypal.com"
 SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWJoZ3hxZGVmdXF1eWJzdHFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NjAwODMsImV4cCI6MjA3MzEzNjA4M30.s1knFM9QXd8CH8TC0IOtBBBvb-qm2XYl_VlhVb-CqcE"
+
