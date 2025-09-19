@@ -17,6 +17,9 @@ const PublicLayout = React.lazy(() => import('../layouts/PublicLayout'));
 
 const Loading = () => <div className="flex items-center justify-center min-h-screen">Cargando...</div>;
 
+// Admin Panel
+const AdminPanel = React.lazy(() => import('../pages/AdminPanel'));
+
 const AppRoutes = () => {
   return (
     <React.Suspense fallback={<Loading />}>
@@ -30,6 +33,7 @@ const AppRoutes = () => {
           <Route path="registro" element={<Register />} />
           <Route path="blog" element={<Blog />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="admin" element={<AdminPanel />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
