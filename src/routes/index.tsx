@@ -12,8 +12,7 @@ const Dashboard = React.lazy(() => import('../pages/Dashboard'));
 const Blog = React.lazy(() => import('../pages/Blog'));
 const NotFoundPage = React.lazy(() => import('../pages/NotFoundPage'));
 
-// Layout
-const PublicLayout = React.lazy(() => import('../layouts/PublicLayout'));
+// Layout removido - usando rutas directas
 
 const Loading = () => <div className="flex items-center justify-center min-h-screen">Cargando...</div>;
 
@@ -24,17 +23,15 @@ const AppRoutes = () => {
   return (
     <React.Suspense fallback={<Loading />}>
       <Routes>
-        <Route path="/" element={<PublicLayout />}>
-          <Route index element={<HomePage />} />
-          <Route path="sobre-nosotros" element={<AboutPage />} />
-          <Route path="servicios" element={<ServicesPage />} />
-          <Route path="contacto" element={<ContactPage />} />
-          <Route path="login" element={<Login />} />
-          <Route path="registro" element={<Register />} />
-          <Route path="blog" element={<Blog />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="admin" element={<AdminPanel />} />
-        </Route>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/sobre-nosotros" element={<AboutPage />} />
+        <Route path="/servicios" element={<ServicesPage />} />
+        <Route path="/contacto" element={<ContactPage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/registro" element={<Register />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/admin" element={<AdminPanel />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </React.Suspense>
