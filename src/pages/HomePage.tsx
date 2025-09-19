@@ -103,7 +103,6 @@ const HomePage: React.FC = () => {
                 <p className="text-gray-600">{service.description}</p>
               </Link>
             ))}
-            ))}
           </div>
         </div>
       </section>
