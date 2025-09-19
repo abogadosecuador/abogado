@@ -7,8 +7,8 @@ workers_dev = true
 [build]
 command = "npm run build"
 
-[assets]
-directory = "./dist"
+[site]
+bucket = "./dist"
 
 [[kv_namespaces]]
 binding = "ABOGADO_WILSON_KV"
