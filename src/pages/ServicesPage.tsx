@@ -3,6 +3,7 @@ import { ScaleIcon, UserGroupIcon, TruckIcon, BuildingOfficeIcon, HeartIcon, Doc
 import { Link } from 'react-router-dom';
 import { dataService } from '../services/supabaseService';
 
+// Fixed CarIcon import issue - using TruckIcon instead
 const iconMap = {
   civil: ScaleIcon,
   penal: UserGroupIcon,
