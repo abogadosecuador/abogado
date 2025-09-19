@@ -2,6 +2,9 @@ name = "abogados-ecuador"
 compatibility_date = "2025-01-01"
 account_id = "70661c46051942965565a5c976219dde"
 
+[assets]
+directory = "./dist"
+
 [[kv_namespaces]]
 binding = "ABOGADO_WILSON_KV"
 id = "0757f29fc8264ce985de8d780283d86e"
