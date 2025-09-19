@@ -47,13 +47,12 @@ const getSupabaseClient = () => {
     return supabaseClient;
   }
 
-  const supabaseUrl = window.__APP_CONFIG__?.supabaseUrl;
-  const supabaseKey = window.__APP_CONFIG__?.supabaseKey;
+  // Usar configuración directa para producción
+  const supabaseUrl = window.__APP_CONFIG__?.supabaseUrl || 'https://kbybhgxqdefuquybstqk.supabase.co';
+  const supabaseKey = window.__APP_CONFIG__?.supabaseKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtieWJoZ3hxZGVmdXF1eWJzdHFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc1NjAwODMsImV4cCI6MjA3MzEzNjA4M30.s1knFM9QXd8CH8TC0IOtBBBvb-qm2XYl_VlhVb-CqcE';
 
   if (!supabaseUrl || !supabaseKey) {
-    console.error('Error: Las credenciales de Supabase no están disponibles en window.__APP_CONFIG__.');
-    // Devolvemos un objeto nulo o lanzamos un error para detener la ejecución
-    // en lugar de usar un cliente de fallback que oculte el problema.
+    console.error('Error: Configuración de Supabase no disponible');
     throw new Error('Configuración de Supabase no encontrada.');
   }
 

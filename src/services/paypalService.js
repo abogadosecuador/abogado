@@ -3,10 +3,8 @@
  * Abogados Ecuador
  */
 
-// PayPal Configuration (Deprecated in frontend)
-// WARNING: No almacenar credenciales en el frontend. Usar el backend (/api/payments).
-const PAYPAL_CLIENT_ID = '';
-const PAYPAL_SECRET = '';
+// PayPal Configuration - Solo Client ID público para frontend
+const PAYPAL_CLIENT_ID = 'AWxKgr5n7ex5Lc3fDBOooaVHLgcAB-KCrYXgCmit9DpNXFIuBa6bUypYFjr-hAqARlILGxk_rRTsBZeS';
 const PAYPAL_API_URL = 'https://api-m.paypal.com';
 
 class PayPalService {
@@ -95,7 +93,12 @@ class PayPalService {
     }
 
     try {
-      throw new Error('Use el endpoint /api/payments/create-order para crear la orden.');
+      const response = await fetch('/api/payments/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(order)
+      });
+      return await response.json();
     } catch (error) {
       console.error('PayPal order creation error:', error);
       throw error;
@@ -109,7 +112,11 @@ class PayPalService {
     await this.getAccessToken();
 
     try {
-      throw new Error('Use el endpoint /api/payments/capture para capturar el pago.');
+      const response = await fetch(`/api/payments/capture/${orderId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      return await response.json();
     } catch (error) {
       console.error('PayPal capture error:', error);
       throw error;
