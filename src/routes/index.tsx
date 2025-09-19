@@ -1,6 +1,5 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import PrivateRoute from '../components/routing/PrivateRoute';
 
 // Componentes lazy existentes en src/pages
 const HomePage = React.lazy(() => import('../pages/HomePage'));
@@ -44,14 +43,7 @@ const AppRoutes: React.FC = () => {
         </Route>
 
         {/* Rutas privadas */}
-        <Route
-          path="/dashboard/*"
-          element={
-            <PrivateRoute>
-              <DashboardPage />
-            </PrivateRoute>
-          }
-        />
+        <Route path="/dashboard" element={<DashboardPage />} />
 
         {/* Ruta para la página 404 */}
         <Route path="*" element={<NotFoundPage />} />
